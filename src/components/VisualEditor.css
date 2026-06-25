@@ -1,0 +1,287 @@
+.visualEditorLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px;
+  pointer-events: auto;
+  background: linear-gradient(180deg, rgba(5, 2, 7, 0.2), rgba(5, 2, 7, 0.72));
+}
+
+.visualPasswordPanel,
+.visualEditorPanel {
+  color: #f8f5ff;
+  background:
+    linear-gradient(180deg, rgba(28, 19, 42, 0.96), rgba(16, 10, 25, 0.96)),
+    #100a19;
+  border: 1px solid rgba(167, 139, 250, 0.28);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
+  backdrop-filter: blur(18px);
+}
+
+.visualPasswordPanel {
+  width: min(420px, calc(100vw - 48px));
+  margin: auto;
+  padding: 32px;
+  border-radius: 10px;
+}
+
+.visualPasswordIcon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  color: #f8f5ff;
+  background: #7c3aed;
+  border-radius: 8px;
+  box-shadow: 0 0 34px rgba(124, 58, 237, 0.34);
+}
+
+.visualPasswordPanel h2,
+.visualEditorHeader h2 {
+  margin: 18px 0 0;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.visualPasswordPanel p,
+.visualEditorHeader p,
+.visualEditorFooter span {
+  margin: 10px 0 0;
+  color: #a99fba;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.visualPasswordPanel input {
+  width: 100%;
+  height: 48px;
+  margin-top: 22px;
+  padding: 0 14px;
+  color: #f8f5ff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  border-radius: 8px;
+  outline: none;
+}
+
+.visualPasswordPanel input:focus {
+  border-color: rgba(167, 139, 250, 0.72);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+}
+
+.visualPasswordError {
+  display: block;
+  margin-top: 10px;
+  color: #ff8aa6;
+  font-size: 13px;
+}
+
+.visualPasswordActions,
+.visualEditorTools,
+.visualEditorFooter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.visualPasswordActions {
+  margin-top: 22px;
+}
+
+.visualPasswordActions button,
+.visualEditorTools button,
+.visualPanelSwitch button,
+.visualEditorFooter button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: #f8f5ff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(167, 139, 250, 0.24);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.visualPasswordActions button:first-child,
+.visualEditorTools button:nth-child(2),
+.visualPanelSwitch button.isActive {
+  background: #7c3aed;
+  border-color: rgba(216, 198, 255, 0.38);
+  box-shadow: 0 0 26px rgba(124, 58, 237, 0.22);
+}
+
+.visualEditorPanel {
+  width: min(1480px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  padding: 22px;
+  border-radius: 12px;
+  overflow: auto;
+}
+
+.visualEditorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.visualEditorHeader p {
+  margin: 0;
+  color: #c9b8ff;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.visualEditorHeader h2 {
+  margin-top: 6px;
+  font-size: 24px;
+}
+
+.visualEditorTools button:last-child {
+  width: 40px;
+  padding: 0;
+}
+
+.visualPanelSwitch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.visualControlGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.visualControl {
+  position: relative;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: minmax(118px, 0.42fr) minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px 0 14px;
+  color: #f8f5ff;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 8px;
+}
+
+.visualControl span {
+  color: #bdb4c9;
+  font-size: 13px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.visualControl output {
+  color: #ffffff;
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 12px;
+  text-align: right;
+}
+
+.visualControl input[type="range"] {
+  width: 100%;
+  accent-color: #7c3aed;
+}
+
+.visualColorControl {
+  grid-template-columns: minmax(118px, 0.42fr) 34px minmax(86px, 0.56fr);
+}
+
+.visualColorControl input[type="color"] {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.visualColorControl input[type="text"],
+.visualTextControl input {
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  border-radius: 6px;
+  outline: none;
+  font-family: "IBM Plex Mono", "Courier New", monospace;
+  font-size: 12px;
+}
+
+.visualTextControl {
+  grid-template-columns: minmax(118px, 0.42fr) minmax(0, 1fr);
+}
+
+.visualToggleControl {
+  grid-template-columns: minmax(118px, 1fr) 44px;
+}
+
+.visualToggleControl input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.visualToggleControl i {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: background 0.2s ease;
+}
+
+.visualToggleControl i::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.2s ease;
+}
+
+.visualToggleControl input:checked + i {
+  background: #7c3aed;
+}
+
+.visualToggleControl input:checked + i::after {
+  transform: translateX(20px);
+}
+
+.visualEditorFooter {
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(167, 139, 250, 0.16);
+}
+
+.visualEditorFooter span {
+  margin: 0;
+}
+
+@media (max-width: 1280px) {
+  .visualControlGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
