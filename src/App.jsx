@@ -10,7 +10,7 @@ import {
   Trophy,
   Wand2,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ASCIIText from "./components/ASCIIText";
 import FaultyTerminal from "./components/FaultyTerminal";
 import VisualEditor from "./components/VisualEditor";
@@ -67,6 +67,46 @@ function loadVisualSettings() {
   } catch {
     return cloneSettings(defaultVisualSettings);
   }
+}
+
+function HeroVisual({ terminalSettings, terminalGrid, asciiSettings, variant = "full" }) {
+  return (
+    <>
+      <div className={variant === "mini" ? "terminalBackdrop miniTerminalBackdrop" : "terminalBackdrop"} aria-hidden="true">
+        <FaultyTerminal
+          scale={terminalSettings.scale}
+          gridMul={terminalGrid}
+          digitSize={terminalSettings.digitSize}
+          timeScale={terminalSettings.timeScale}
+          scanlineIntensity={terminalSettings.scanlineIntensity}
+          glitchAmount={terminalSettings.glitchAmount}
+          flickerAmount={terminalSettings.flickerAmount}
+          noiseAmp={terminalSettings.noiseAmp}
+          chromaticAberration={terminalSettings.chromaticAberration}
+          dither={terminalSettings.dither}
+          curvature={terminalSettings.curvature}
+          tint={terminalSettings.tint}
+          mouseReact={terminalSettings.mouseReact}
+          mouseStrength={terminalSettings.mouseStrength}
+          pageLoadAnimation={terminalSettings.pageLoadAnimation}
+          brightness={terminalSettings.brightness}
+        />
+      </div>
+
+      <div className={variant === "mini" ? "heroContent miniHeroContent" : "heroContent shell"}>
+        <div className={variant === "mini" ? "asciiTitleWrap miniAsciiTitleWrap" : "asciiTitleWrap"}>
+          <ASCIIText
+            text={asciiSettings.text}
+            enableWaves={asciiSettings.enableWaves}
+            asciiFontSize={asciiSettings.asciiFontSize}
+            textFontSize={asciiSettings.textFontSize}
+            textColor={asciiSettings.textColor}
+            planeBaseHeight={asciiSettings.planeBaseHeight}
+          />
+        </div>
+      </div>
+    </>
+  );
 }
 
 const stats = [
@@ -133,6 +173,8 @@ function App() {
   const [savedVisualSettings, setSavedVisualSettings] = useState(loadVisualSettings);
   const [draftVisualSettings, setDraftVisualSettings] = useState(null);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [transitionProgress, setTransitionProgress] = useState(0);
+  const transitionRef = useRef(null);
   const visualSettings = draftVisualSettings || savedVisualSettings;
   const terminalSettings = visualSettings.terminal;
   const asciiSettings = visualSettings.ascii;
@@ -164,6 +206,26 @@ function App() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [editorOpen, savedVisualSettings]);
 
+  useEffect(() => {
+    const updateTransitionProgress = () => {
+      const section = transitionRef.current;
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const scrollRange = Math.max(1, rect.height - window.innerHeight);
+      const nextProgress = Math.min(1, Math.max(0, -rect.top / scrollRange));
+      setTransitionProgress(nextProgress);
+    };
+
+    updateTransitionProgress();
+    window.addEventListener("scroll", updateTransitionProgress, { passive: true });
+    window.addEventListener("resize", updateTransitionProgress);
+    return () => {
+      window.removeEventListener("scroll", updateTransitionProgress);
+      window.removeEventListener("resize", updateTransitionProgress);
+    };
+  }, []);
+
   const closeVisualEditor = ({ save }) => {
     if (save && draftVisualSettings) {
       const nextSettings = mergeVisualSettings(draftVisualSettings);
@@ -178,37 +240,22 @@ function App() {
   return (
     <main>
       <section className="hero" id="top">
-        <div className="terminalBackdrop" aria-hidden="true">
-          <FaultyTerminal
-            scale={terminalSettings.scale}
-            gridMul={terminalGrid}
-            digitSize={terminalSettings.digitSize}
-            timeScale={terminalSettings.timeScale}
-            scanlineIntensity={terminalSettings.scanlineIntensity}
-            glitchAmount={terminalSettings.glitchAmount}
-            flickerAmount={terminalSettings.flickerAmount}
-            noiseAmp={terminalSettings.noiseAmp}
-            chromaticAberration={terminalSettings.chromaticAberration}
-            dither={terminalSettings.dither}
-            curvature={terminalSettings.curvature}
-            tint={terminalSettings.tint}
-            mouseReact={terminalSettings.mouseReact}
-            mouseStrength={terminalSettings.mouseStrength}
-            pageLoadAnimation={terminalSettings.pageLoadAnimation}
-            brightness={terminalSettings.brightness}
-          />
-        </div>
-
-        <div className="heroContent shell">
-          <div className="asciiTitleWrap">
-            <ASCIIText
-              text={asciiSettings.text}
-              enableWaves={asciiSettings.enableWaves}
-              asciiFontSize={asciiSettings.asciiFontSize}
-              textFontSize={asciiSettings.textFontSize}
-              textColor={asciiSettings.textColor}
-              planeBaseHeight={asciiSettings.planeBaseHeight}
-            />
+        <HeroVisual terminalSettings={terminalSettings} terminalGrid={terminalGrid} asciiSettings={asciiSettings} />
+      </section>
+      <section
+        ref={transitionRef}
+        className="tvTransition"
+        style={{ "--scene-progress": transitionProgress }}
+        aria-label="主页进入电视机的场景转场"
+      >
+        <div className="tvSceneSticky">
+          <div className="tvSceneArt" aria-hidden="true" />
+          <div className="tvSceneVignette" aria-hidden="true" />
+          <div className="tvScreenSlot" aria-label="电视机中的主页预览">
+            <div className="tvScreenContent">
+              <HeroVisual terminalSettings={terminalSettings} terminalGrid={terminalGrid} asciiSettings={asciiSettings} variant="mini" />
+            </div>
+            <div className="tvScreenGlass" aria-hidden="true" />
           </div>
         </div>
       </section>

@@ -291,6 +291,122 @@ video {
   padding-bottom: 0;
 }
 
+.tvTransition {
+  --scene-progress: 0;
+  position: relative;
+  height: 220vh;
+  background: #14081d;
+}
+
+.tvSceneSticky {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+  background: #12071b;
+}
+
+.tvSceneArt,
+.tvSceneVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tvSceneArt {
+  z-index: 0;
+  background-image: url("/assets/tv-transition-scene.png");
+  background-position: center;
+  background-size: cover;
+  transform: scale(calc(1.08 - var(--scene-progress) * 0.08));
+  transform-origin: center;
+  filter: saturate(calc(0.9 + var(--scene-progress) * 0.18)) brightness(calc(0.78 + var(--scene-progress) * 0.18));
+}
+
+.tvSceneVignette {
+  z-index: 2;
+  background:
+    radial-gradient(circle at 50% 45%, transparent 0 28%, rgba(11, 4, 19, 0.12) 48%, rgba(5, 2, 7, 0.42) 100%),
+    linear-gradient(180deg, rgba(5, 2, 7, calc(0.92 - var(--scene-progress) * 0.82)) 0%, transparent 52%),
+    linear-gradient(0deg, rgba(5, 2, 7, 0.28), transparent 42%);
+}
+
+.tvScreenSlot {
+  position: absolute;
+  z-index: 1;
+  left: 29.1%;
+  top: 30.4%;
+  width: 40.9%;
+  height: 37.8%;
+  overflow: hidden;
+  border-radius: 6% / 11%;
+  background: #050207;
+  transform:
+    translate3d(0, calc((1 - var(--scene-progress)) * 7vh), 0)
+    scale(calc(0.96 + var(--scene-progress) * 0.04));
+  transform-origin: center;
+  opacity: calc(0.08 + var(--scene-progress) * 0.92);
+  box-shadow:
+    inset 0 0 34px rgba(0, 0, 0, 0.94),
+    0 0 calc(10px + var(--scene-progress) * 24px) rgba(124, 58, 237, 0.42);
+}
+
+.tvScreenContent {
+  position: absolute;
+  inset: -2%;
+  overflow: hidden;
+  background: #050207;
+  transform:
+    scale(calc(2.35 - var(--scene-progress) * 1.35))
+    rotate(calc((1 - var(--scene-progress)) * -0.8deg));
+  transform-origin: center;
+  transition: filter 0.16s ease;
+  filter:
+    contrast(calc(1.15 - var(--scene-progress) * 0.1))
+    saturate(calc(1.32 - var(--scene-progress) * 0.1));
+}
+
+.tvScreenGlass {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.18), transparent 21% 68%, rgba(255, 255, 255, 0.06)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 4px);
+  mix-blend-mode: screen;
+  opacity: calc(0.18 + var(--scene-progress) * 0.26);
+}
+
+.miniTerminalBackdrop,
+.miniHeroContent {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.miniTerminalBackdrop canvas {
+  opacity: 0.98;
+}
+
+.miniHeroContent {
+  z-index: 3;
+  min-height: 100%;
+  padding: 0;
+}
+
+.miniAsciiTitleWrap {
+  width: 88%;
+  height: 44%;
+}
+
+.miniAsciiTitleWrap .ascii-text-container {
+  transform: scale(0.82);
+}
+
 .heroLead {
   max-width: 700px;
   margin: -10px 0 0;
