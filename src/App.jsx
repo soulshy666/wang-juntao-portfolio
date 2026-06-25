@@ -239,23 +239,27 @@ function App() {
 
   return (
     <main>
-      <section className="hero" id="top">
-        <HeroVisual terminalSettings={terminalSettings} terminalGrid={terminalGrid} asciiSettings={asciiSettings} />
-      </section>
       <section
         ref={transitionRef}
-        className="tvTransition"
+        className="heroTvTransition"
+        id="top"
         style={{ "--scene-progress": transitionProgress }}
         aria-label="主页进入电视机的场景转场"
       >
-        <div className="tvSceneSticky">
-          <div className="tvSceneArt" aria-hidden="true" />
-          <div className="tvSceneVignette" aria-hidden="true" />
-          <div className="tvScreenSlot" aria-label="电视机中的主页预览">
-            <div className="tvScreenContent">
-              <HeroVisual terminalSettings={terminalSettings} terminalGrid={terminalGrid} asciiSettings={asciiSettings} variant="mini" />
+        <div className="heroTvSticky">
+          <div className="transitionHeroLayer">
+            <HeroVisual terminalSettings={terminalSettings} terminalGrid={terminalGrid} asciiSettings={asciiSettings} />
+          </div>
+
+          <div className="tvSceneLayer">
+            <div className="tvSceneArt" aria-hidden="true" />
+            <div className="tvSceneVignette" aria-hidden="true" />
+            <div className="tvScreenSlot" aria-label="电视机中的主页预览">
+              <div className="tvScreenContent">
+                <HeroVisual terminalSettings={terminalSettings} terminalGrid={terminalGrid} asciiSettings={asciiSettings} variant="mini" />
+              </div>
+              <div className="tvScreenGlass" aria-hidden="true" />
             </div>
-            <div className="tvScreenGlass" aria-hidden="true" />
           </div>
         </div>
       </section>

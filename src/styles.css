@@ -291,19 +291,44 @@ video {
   padding-bottom: 0;
 }
 
-.tvTransition {
+.heroTvTransition {
   --scene-progress: 0;
   position: relative;
   height: 220vh;
-  background: #14081d;
+  background: #050207;
 }
 
-.tvSceneSticky {
+.heroTvSticky {
   position: sticky;
   top: 0;
   min-height: 100vh;
   overflow: hidden;
   isolation: isolate;
+  background: #050207;
+}
+
+.transitionHeroLayer,
+.tvSceneLayer {
+  position: absolute;
+  inset: 0;
+  min-height: 100vh;
+}
+
+.transitionHeroLayer {
+  z-index: 1;
+  opacity: clamp(0, calc(1 - var(--scene-progress) * 1.28), 1);
+  transform: scale(calc(1 - var(--scene-progress) * 0.1)) translate3d(0, calc(var(--scene-progress) * -2vh), 0);
+  transform-origin: center;
+  filter: blur(calc(var(--scene-progress) * 2px));
+  background: #050207;
+}
+
+.tvSceneLayer {
+  z-index: 2;
+  opacity: clamp(0, calc(var(--scene-progress) * 1.35), 1);
+  transform: scale(calc(1.04 - var(--scene-progress) * 0.04));
+  transform-origin: center;
+  pointer-events: none;
   background: #12071b;
 }
 
