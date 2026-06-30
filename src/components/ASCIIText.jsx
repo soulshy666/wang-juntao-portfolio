@@ -78,8 +78,14 @@ class AsciiFilter {
     this.context.msImageSmoothingEnabled = false;
     this.context.imageSmoothingEnabled = false;
 
+    this.pointerElement = null;
     this.onMouseMove = this.onMouseMove.bind(this);
+    document.addEventListener("pointermove", this.onMouseMove);
     document.addEventListener("mousemove", this.onMouseMove);
+  }
+
+  setPointerElement(element) {
+    this.pointerElement = element;
   }
 
   setSize(width, height) {
@@ -129,6 +135,19 @@ class AsciiFilter {
   }
 
   onMouseMove(e) {
+    if (this.pointerElement) {
+      const bounds = this.pointerElement.getBoundingClientRect();
+      const renderedWidth = bounds.width || this.width;
+      const renderedHeight = bounds.height || this.height;
+      const x = ((e.clientX - bounds.left) / renderedWidth) * this.width;
+      const y = ((e.clientY - bounds.top) / renderedHeight) * this.height;
+      this.mouse = {
+        x: Math.min(Math.max(x, 0), this.width),
+        y: Math.min(Math.max(y, 0), this.height),
+      };
+      return;
+    }
+
     this.mouse = { x: e.clientX * PX_RATIO, y: e.clientY * PX_RATIO };
   }
 
@@ -172,6 +191,7 @@ class AsciiFilter {
   }
 
   dispose() {
+    document.removeEventListener("pointermove", this.onMouseMove);
     document.removeEventListener("mousemove", this.onMouseMove);
   }
 }
@@ -224,7 +244,7 @@ class CanvasTxt {
 }
 
 class CanvAscii {
-  constructor({ text, asciiFontSize, textFontSize, textColor, planeBaseHeight, enableWaves }, containerElem, width, height) {
+  constructor({ text, asciiFontSize, textFontSize, textColor, planeBaseHeight, enableWaves, enableRotation }, containerElem, width, height) {
     this.textString = text;
     this.asciiFontSize = asciiFontSize;
     this.textFontSize = textFontSize;
@@ -234,6 +254,7 @@ class CanvAscii {
     this.width = width;
     this.height = height;
     this.enableWaves = enableWaves;
+    this.enableRotation = enableRotation;
 
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 1, 1000);
     this.camera.position.z = 30;
@@ -301,12 +322,14 @@ class CanvAscii {
       fontSize: this.asciiFontSize,
       invert: true,
     });
+    this.filter.setPointerElement(this.container);
 
     this.container.appendChild(this.filter.domElement);
     this.setSize(this.width, this.height);
 
-    this.container.addEventListener("mousemove", this.onMouseMove);
-    this.container.addEventListener("touchmove", this.onMouseMove);
+    document.addEventListener("pointermove", this.onMouseMove);
+    document.addEventListener("mousemove", this.onMouseMove);
+    document.addEventListener("touchmove", this.onMouseMove, { passive: true });
   }
 
   setSize(w, h) {
@@ -328,9 +351,14 @@ class CanvAscii {
   onMouseMove(evt) {
     const e = evt.touches ? evt.touches[0] : evt;
     const bounds = this.container.getBoundingClientRect();
-    const x = e.clientX - bounds.left;
-    const y = e.clientY - bounds.top;
-    this.mouse = { x, y };
+    const renderedWidth = bounds.width || this.width;
+    const renderedHeight = bounds.height || this.height;
+    const x = ((e.clientX - bounds.left) / renderedWidth) * this.width;
+    const y = ((e.clientY - bounds.top) / renderedHeight) * this.height;
+    this.mouse = {
+      x: Math.min(Math.max(x, 0), this.width),
+      y: Math.min(Math.max(y, 0), this.height),
+    };
   }
 
   animate() {
@@ -354,6 +382,12 @@ class CanvAscii {
   }
 
   updateRotation() {
+    if (!this.enableRotation) {
+      this.mesh.rotation.x += (0 - this.mesh.rotation.x) * 0.14;
+      this.mesh.rotation.y += (0 - this.mesh.rotation.y) * 0.14;
+      return;
+    }
+
     const x = Math.map(this.mouse.y, 0, this.height, 0.5, -0.5);
     const y = Math.map(this.mouse.x, 0, this.width, -0.5, 0.5);
 
@@ -385,8 +419,9 @@ class CanvAscii {
         this.container.removeChild(this.filter.domElement);
       }
     }
-    this.container.removeEventListener("mousemove", this.onMouseMove);
-    this.container.removeEventListener("touchmove", this.onMouseMove);
+    document.removeEventListener("pointermove", this.onMouseMove);
+    document.removeEventListener("mousemove", this.onMouseMove);
+    document.removeEventListener("touchmove", this.onMouseMove);
     this.clear();
     if (this.renderer) {
       this.renderer.dispose();
@@ -402,6 +437,7 @@ export default function ASCIIText({
   textColor = "#fdf9f3",
   planeBaseHeight = 8,
   enableWaves = true,
+  enableRotation = true,
 }) {
   const containerRef = useRef(null);
   const asciiRef = useRef(null);
@@ -415,7 +451,7 @@ export default function ASCIIText({
 
     const createAndInit = async (container, w, h) => {
       const instance = new CanvAscii(
-        { text, asciiFontSize, textFontSize, textColor, planeBaseHeight, enableWaves },
+        { text, asciiFontSize, textFontSize, textColor, planeBaseHeight, enableWaves, enableRotation },
         container,
         w,
         h,
@@ -476,7 +512,7 @@ export default function ASCIIText({
         asciiRef.current = null;
       }
     };
-  }, [text, asciiFontSize, textFontSize, textColor, planeBaseHeight, enableWaves]);
+  }, [text, asciiFontSize, textFontSize, textColor, planeBaseHeight, enableWaves, enableRotation]);
 
   return (
     <div

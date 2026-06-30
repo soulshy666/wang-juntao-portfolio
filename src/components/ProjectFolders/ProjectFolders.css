@@ -1,0 +1,60 @@
+.projectFolders {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 48px var(--project-folder-gap, 28px);
+}
+
+.projectFolders.isCompact {
+  justify-content: flex-start;
+  gap: 28px;
+}
+
+.projectFolderItem {
+  display: grid;
+  width: 145px;
+  justify-items: center;
+  gap: 26px;
+}
+
+.projectFolders.isCompact .projectFolderItem {
+  width: 112px;
+  gap: 10px;
+}
+
+.projectFolderVisual {
+  width: 100px;
+  height: 80px;
+  transform-origin: center bottom;
+}
+
+.projectFolderItem > span {
+  color: #f8f5ff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.projectFolders.isCompact .projectFolderItem > span {
+  font-size: 12px;
+}
+
+.projectFolderPaper {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #1b1026;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .projectFolders,
+  .projectFolders.isCompact {
+    justify-content: flex-start;
+    gap: 32px 20px;
+  }
+}

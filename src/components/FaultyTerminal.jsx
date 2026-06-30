@@ -257,9 +257,13 @@ export default function FaultyTerminal({
     const container = containerRef.current;
     if (!container) return;
     const rect = container.getBoundingClientRect();
+    const width = rect.width || container.offsetWidth || 1;
+    const height = rect.height || container.offsetHeight || 1;
+    const x = (event.clientX - rect.left) / width;
+    const y = 1 - (event.clientY - rect.top) / height;
     mouseRef.current = {
-      x: (event.clientX - rect.left) / rect.width,
-      y: 1 - (event.clientY - rect.top) / rect.height,
+      x: Math.min(Math.max(x, 0), 1),
+      y: Math.min(Math.max(y, 0), 1),
     };
   }, []);
 
@@ -349,12 +353,18 @@ export default function FaultyTerminal({
 
     rafRef.current = requestAnimationFrame(update);
     container.appendChild(gl.canvas);
-    if (mouseReact) window.addEventListener("mousemove", handleMouseMove);
+    if (mouseReact) {
+      window.addEventListener("pointermove", handleMouseMove);
+      window.addEventListener("mousemove", handleMouseMove);
+    }
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       resizeObserver.disconnect();
-      if (mouseReact) window.removeEventListener("mousemove", handleMouseMove);
+      if (mouseReact) {
+        window.removeEventListener("pointermove", handleMouseMove);
+        window.removeEventListener("mousemove", handleMouseMove);
+      }
       if (gl.canvas.parentElement === container) container.removeChild(gl.canvas);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
       loadAnimationStartRef.current = 0;

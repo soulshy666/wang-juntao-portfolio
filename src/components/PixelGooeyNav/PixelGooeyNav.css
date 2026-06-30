@@ -1,0 +1,183 @@
+.pixelGooeyNav {
+  --pixel-item-width: 104px;
+  --pixel-item-height: 46px;
+  --pixel-gap: 14px;
+  --pixel-bg: rgba(13, 7, 24, 0.66);
+  --pixel-border: rgba(196, 181, 253, 0.34);
+  --pixel-text: rgba(248, 245, 255, 0.74);
+  --pixel-active-text: #100719;
+  --pixel-active-bg: #f8f5ff;
+  --pixel-particle-1: #ffffff;
+  --pixel-particle-2: #c4b5fd;
+  --pixel-particle-3: #8b5cf6;
+  --pixel-particle-4: #20ff75;
+  position: relative;
+  isolation: isolate;
+  padding: 10px;
+  font-family: "Courier New", "Microsoft YaHei", monospace;
+  image-rendering: pixelated;
+}
+
+.pixelGooeyNav ul {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  gap: var(--pixel-gap);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.pixelGooeyNav a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--pixel-item-width);
+  height: var(--pixel-item-height);
+  color: var(--pixel-text);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-decoration: none;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.28);
+  transition:
+    color 180ms ease,
+    transform 180ms ease,
+    text-shadow 180ms ease;
+}
+
+.pixelGooeyNav a::before,
+.pixelGooeyNav a::after,
+.pixelGooeyTrack,
+.pixelGooeyHighlightCore {
+  clip-path: polygon(
+    0 8px,
+    8px 8px,
+    8px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 8px,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    8px calc(100% - 8px),
+    0 calc(100% - 8px)
+  );
+}
+
+.pixelGooeyTrack {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 44%),
+    var(--pixel-bg);
+  border: 1px solid var(--pixel-border);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.035),
+    0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+.pixelGooeyTrack::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 8px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 8px);
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.pixelGooeyHighlight {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 1;
+  width: var(--pixel-item-width);
+  height: var(--pixel-item-height);
+  transform: translateX(calc(var(--pixel-active-index) * (var(--pixel-item-width) + var(--pixel-gap))));
+  transition: transform 460ms cubic-bezier(0.18, 1.08, 0.24, 1);
+  pointer-events: none;
+}
+
+.pixelGooeyHighlightCore {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(196, 181, 253, 0.96)),
+    var(--pixel-active-bg);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.24),
+    0 0 24px rgba(139, 92, 246, 0.48);
+}
+
+.pixelGooeyBurst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: 0;
+  height: 0;
+}
+
+.pixelGooeyBurst i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--pixel-size);
+  height: var(--pixel-size);
+  background: var(--pixel-color);
+  box-shadow:
+    calc(var(--pixel-size) * 0.9) 0 0 var(--pixel-color),
+    0 calc(var(--pixel-size) * 0.9) 0 rgba(255, 255, 255, 0.52);
+  opacity: 0;
+  transform: translate(var(--pixel-from-x), var(--pixel-from-y)) scale(0.15);
+  animation: pixelGooeyBurst 620ms cubic-bezier(0.16, 1, 0.3, 1) var(--pixel-delay) both;
+}
+
+.pixelGooeyNav a.isActive,
+.pixelGooeyNav a:hover {
+  color: var(--pixel-active-text);
+  text-shadow: none;
+  transform: translateY(-1px);
+}
+
+.pixelGooeyNav a:focus-visible {
+  outline: 2px solid #20ff75;
+  outline-offset: 3px;
+}
+
+@keyframes pixelGooeyBurst {
+  0% {
+    opacity: 0;
+    transform: translate(var(--pixel-from-x), var(--pixel-from-y)) scale(0.15);
+  }
+
+  28% {
+    opacity: 1;
+  }
+
+  68% {
+    opacity: 0.92;
+    transform: translate(var(--pixel-x), var(--pixel-y)) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--pixel-x) * 0.42), calc(var(--pixel-y) * 0.42)) scale(0.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixelGooeyHighlight {
+    transition-duration: 0.01ms;
+  }
+
+  .pixelGooeyBurst i {
+    animation: none;
+  }
+}
