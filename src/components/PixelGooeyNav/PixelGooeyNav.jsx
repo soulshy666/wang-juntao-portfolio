@@ -45,7 +45,7 @@ export default function PixelGooeyNav({ items, initialActiveIndex = 0, activeInd
     const href = items[index]?.href;
     if (!href?.startsWith("#")) return;
     event.preventDefault();
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+    document.querySelector(href)?.scrollIntoView({ behavior: "auto" });
   };
 
   return (

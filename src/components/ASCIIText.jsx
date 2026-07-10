@@ -81,7 +81,6 @@ class AsciiFilter {
     this.pointerElement = null;
     this.onMouseMove = this.onMouseMove.bind(this);
     document.addEventListener("pointermove", this.onMouseMove);
-    document.addEventListener("mousemove", this.onMouseMove);
   }
 
   setPointerElement(element) {
@@ -192,7 +191,6 @@ class AsciiFilter {
 
   dispose() {
     document.removeEventListener("pointermove", this.onMouseMove);
-    document.removeEventListener("mousemove", this.onMouseMove);
   }
 }
 
@@ -255,6 +253,8 @@ class CanvAscii {
     this.height = height;
     this.enableWaves = enableWaves;
     this.enableRotation = enableRotation;
+    this.active = true;
+    this.lastRenderTime = 0;
 
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 1, 1000);
     this.camera.position.z = 30;
@@ -328,7 +328,6 @@ class CanvAscii {
     this.setSize(this.width, this.height);
 
     document.addEventListener("pointermove", this.onMouseMove);
-    document.addEventListener("mousemove", this.onMouseMove);
     document.addEventListener("touchmove", this.onMouseMove, { passive: true });
   }
 
@@ -362,11 +361,18 @@ class CanvAscii {
   }
 
   animate() {
-    const animateFrame = () => {
+    const animateFrame = (time) => {
       this.animationFrameId = requestAnimationFrame(animateFrame);
+      if (!this.active || window.__portfolioPageScrolling || time - this.lastRenderTime < 1000 / 30) return;
+      this.lastRenderTime = time;
       this.render();
     };
-    animateFrame();
+    this.animationFrameId = requestAnimationFrame(animateFrame);
+  }
+
+  setActive(active) {
+    this.active = active;
+    if (active) this.lastRenderTime = 0;
   }
 
   render() {
@@ -420,7 +426,6 @@ class CanvAscii {
       }
     }
     document.removeEventListener("pointermove", this.onMouseMove);
-    document.removeEventListener("mousemove", this.onMouseMove);
     document.removeEventListener("touchmove", this.onMouseMove);
     this.clear();
     if (this.renderer) {
@@ -447,7 +452,27 @@ export default function ASCIIText({
 
     let cancelled = false;
     let observer = null;
+    let visibilityObserver = null;
     let ro = null;
+    let isIntersecting = true;
+
+    const updateActivity = () => {
+      asciiRef.current?.setActive(isIntersecting && document.visibilityState !== "hidden");
+    };
+
+    const handleVisibilityChange = () => updateActivity();
+
+    const observeActivity = (container) => {
+      visibilityObserver = new IntersectionObserver(
+        ([entry]) => {
+          isIntersecting = entry.isIntersecting;
+          updateActivity();
+        },
+        { rootMargin: "160px 0px", threshold: 0.01 },
+      );
+      visibilityObserver.observe(container);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    };
 
     const createAndInit = async (container, w, h) => {
       const instance = new CanvAscii(
@@ -476,6 +501,7 @@ export default function ASCIIText({
                 asciiRef.current = await createAndInit(containerRef.current, w, h);
                 if (!cancelled && asciiRef.current) {
                   asciiRef.current.load();
+                  observeActivity(containerRef.current);
                 }
               }
             }
@@ -489,6 +515,7 @@ export default function ASCIIText({
       asciiRef.current = await createAndInit(containerRef.current, width, height);
       if (!cancelled && asciiRef.current) {
         asciiRef.current.load();
+        observeActivity(containerRef.current);
 
         ro = new ResizeObserver((entries) => {
           if (!entries[0] || !asciiRef.current) return;
@@ -506,6 +533,8 @@ export default function ASCIIText({
     return () => {
       cancelled = true;
       if (observer) observer.disconnect();
+      if (visibilityObserver) visibilityObserver.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (ro) ro.disconnect();
       if (asciiRef.current) {
         asciiRef.current.dispose();

@@ -117,14 +117,23 @@ export default function Balatro({
   pixelFilter = 745.0,
   spinEase = 1.0,
   isRotate = false,
-  mouseInteraction = true
+  mouseInteraction = true,
+  active = true,
 }) {
   const containerRef = useRef(null);
+  const activeRef = useRef(active);
+
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
+
+  const offsetX = offset[0];
+  const offsetY = offset[1];
 
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
-    const renderer = new Renderer();
+    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio || 1, 1.25) });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 1);
 
@@ -150,7 +159,7 @@ export default function Balatro({
         },
         uSpinRotation: { value: spinRotation },
         uSpinSpeed: { value: spinSpeed },
-        uOffset: { value: offset },
+        uOffset: { value: [offsetX, offsetY] },
         uColor1: { value: hexToVec4(color1) },
         uColor2: { value: hexToVec4(color2) },
         uColor3: { value: hexToVec4(color3) },
@@ -166,9 +175,28 @@ export default function Balatro({
 
     const mesh = new Mesh(gl, { geometry, program });
     let animationFrameId;
+    let isVisible = true;
+    let isDocumentVisible = document.visibilityState !== 'hidden';
+    let lastRenderTime = 0;
+
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { rootMargin: '220px 0px', threshold: 0.01 }
+    );
+    visibilityObserver.observe(container);
+
+    const handleVisibilityChange = () => {
+      isDocumentVisible = document.visibilityState !== 'hidden';
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     function update(time) {
       animationFrameId = requestAnimationFrame(update);
+      if (!activeRef.current || !isVisible || !isDocumentVisible || window.__portfolioPageScrolling) return;
+      if (time - lastRenderTime < 1000 / 45) return;
+      lastRenderTime = time;
       program.uniforms.iTime.value = time * 0.001;
       renderer.render({ scene: mesh });
     }
@@ -182,19 +210,22 @@ export default function Balatro({
       const y = 1.0 - (e.clientY - rect.top) / rect.height;
       program.uniforms.uMouse.value = [x, y];
     }
-    container.addEventListener('mousemove', handleMouseMove);
+    if (mouseInteraction) container.addEventListener('pointermove', handleMouseMove);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      visibilityObserver.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', resize);
-      container.removeEventListener('mousemove', handleMouseMove);
-      container.removeChild(gl.canvas);
+      if (mouseInteraction) container.removeEventListener('pointermove', handleMouseMove);
+      if (gl.canvas.parentElement === container) container.removeChild(gl.canvas);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, [
     spinRotation,
     spinSpeed,
-    offset,
+    offsetX,
+    offsetY,
     color1,
     color2,
     color3,
@@ -205,7 +236,6 @@ export default function Balatro({
     spinEase,
     isRotate,
     mouseInteraction,
-    containerRef
   ]);
 
   return <div ref={containerRef} className="balatro-container" />;

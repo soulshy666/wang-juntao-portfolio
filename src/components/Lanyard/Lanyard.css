@@ -1,0 +1,12 @@
+.lanyard-wrapper {
+  position: relative;
+  width: min(1320px, 100%);
+  height: min(650px, calc(100vh - 150px));
+  min-height: 500px;
+  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms ease;
+}
+
+.lanyard-wrapper.isRetracting {
+  opacity: 0;
+  transform: translateY(-64vh) scale(0.88);
+}

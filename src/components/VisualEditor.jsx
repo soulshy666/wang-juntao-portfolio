@@ -87,7 +87,6 @@ const editorPanels = [
   { id: "transition", label: "Pixel Transition" },
   { id: "splitText", label: "Split Text" },
   { id: "balatro", label: "Balatro 背景" },
-  { id: "folder", label: "Folder 文件夹" },
 ];
 
 export default function VisualEditor({ settings, defaultSettings, password, onChange, onClose }) {
@@ -344,12 +343,6 @@ export default function VisualEditor({ settings, defaultSettings, password, onCh
               <NumberControl label="旋转缓动" value={settings.balatro.spinEase} min={0} max={2} step={0.05} onChange={(value) => updateGroup("balatro", "spinEase", value)} />
               <ToggleControl label="持续旋转" checked={settings.balatro.isRotate} onChange={(value) => updateGroup("balatro", "isRotate", value)} />
               <ToggleControl label="鼠标互动" checked={settings.balatro.mouseInteraction} onChange={(value) => updateGroup("balatro", "mouseInteraction", value)} />
-            </div>
-          ) : activePanel === "folder" ? (
-            <div className="visualControlGrid">
-              <ColorControl label="文件夹颜色" value={settings.folder.color} onChange={(value) => updateGroup("folder", "color", value)} />
-              <NumberControl label="文件夹大小" value={settings.folder.size} min={0.7} max={1.8} step={0.05} onChange={(value) => updateGroup("folder", "size", value)} />
-              <NumberControl label="文件夹水平间距 px" value={settings.folder.gap} min={8} max={80} step={2} onChange={(value) => updateGroup("folder", "gap", value)} />
             </div>
           ) : null}
 

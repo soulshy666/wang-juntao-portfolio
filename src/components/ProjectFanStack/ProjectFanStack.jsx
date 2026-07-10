@@ -22,6 +22,7 @@ export default function ProjectFanStack({ items, activeIndex = 0, onChange, onOp
   const fanRef = useRef(null);
   const isInView = useInView(fanRef, { amount: 0.28 });
   const [entranceComplete, setEntranceComplete] = useState(false);
+  const [balatroReady, setBalatroReady] = useState(false);
   const active = wrapIndex(activeIndex, items.length);
   const activeProject = items[active];
   const balatroProps = balatroSettings
@@ -90,6 +91,12 @@ export default function ProjectFanStack({ items, activeIndex = 0, onChange, onOp
     const timer = window.setTimeout(() => setEntranceComplete(true), 1500);
     return () => window.clearTimeout(timer);
   }, [entranceComplete, isInView, reduceMotion]);
+
+  useEffect(() => {
+    if (!isInView || balatroReady) return undefined;
+    const timer = window.setTimeout(() => setBalatroReady(true), 620);
+    return () => window.clearTimeout(timer);
+  }, [balatroReady, isInView]);
 
   const selectProject = (index) => {
     onChange?.(index);
@@ -175,14 +182,21 @@ export default function ProjectFanStack({ items, activeIndex = 0, onChange, onOp
                 <div className="projectFanDepth">
                   {card.item.slug === "balatro-shader" ? (
                     <div className="projectFanBalatro" aria-hidden="true">
-                      <Balatro {...balatroProps} />
+                      {balatroReady && <Balatro {...balatroProps} active={isInView} />}
                     </div>
                   ) : (
-                    <img src={card.item.image} alt={`${card.item.title}项目视觉`} draggable="false" />
+                    <img
+                      src={card.item.image}
+                      alt={`${card.item.title}项目视觉`}
+                      draggable="false"
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority={card.active ? "high" : "low"}
+                    />
                   )}
                   <div className="projectFanShade" aria-hidden="true" />
                   <div className="projectFanCardTop">
-                    <span>{card.item.tag}</span>
+                    {card.item.featuredBadge && <span>{card.item.featuredBadge}</span>}
                     <strong>{String(card.index + 1).padStart(2, "0")}</strong>
                   </div>
                   <div className="projectFanCardCopy">

@@ -1,19 +1,26 @@
 import {
+  ArrowLeft,
   ArrowUpRight,
   Code2,
+  Crosshair,
+  Dice5,
   FolderKanban,
   Gamepad2,
+  Gauge,
+  Goal,
   Home,
   Mail,
   MapPin,
   MessageCircle,
+  Mountain,
   Phone,
+  Skull,
   Sparkles,
   Trophy,
   UserRound,
   Wand2,
 } from "lucide-react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import ASCIIText from "./components/ASCIIText";
 import FaultyTerminal from "./components/FaultyTerminal";
 import GooeyNav from "./components/GooeyNav/GooeyNav";
@@ -22,7 +29,10 @@ import BorderGlow from "./components/BorderGlow/BorderGlow";
 import ProjectDetail from "./components/ProjectDetail/ProjectDetail";
 import ProjectFanStack from "./components/ProjectFanStack/ProjectFanStack";
 import ProjectRouteTransition from "./components/ProjectRouteTransition/ProjectRouteTransition";
+import FavoriteTimeline from "./components/FavoriteTimeline/FavoriteTimeline";
 import VisualEditor from "./components/VisualEditor";
+
+const ActivityLanyardBoard = lazy(() => import("./components/ActivityLanyardBoard/ActivityLanyardBoard"));
 
 const EDITOR_PASSWORD = "838485";
 const VISUAL_SETTINGS_KEY = "wjt-portfolio-visual-settings-v1";
@@ -223,6 +233,56 @@ function cloneSettings(settings) {
   return JSON.parse(JSON.stringify(settings));
 }
 
+let pageScrollAnimationFrame = 0;
+
+function animateToScrollPosition(top, duration = 480) {
+  const root = document.documentElement;
+  const previousScrollBehavior = root.style.scrollBehavior;
+  const startTop = window.scrollY;
+  const distance = top - startTop;
+
+  window.cancelAnimationFrame(pageScrollAnimationFrame);
+  root.style.scrollBehavior = "auto";
+  root.classList.add("is-page-scrolling");
+  window.__portfolioPageScrolling = true;
+  window.dispatchEvent(new Event("portfolio-page-scroll-start"));
+
+  if (Math.abs(distance) < 2) {
+    window.scrollTo({ top, left: 0, behavior: "auto" });
+    root.classList.remove("is-page-scrolling");
+    window.__portfolioPageScrolling = false;
+    root.style.scrollBehavior = previousScrollBehavior;
+    window.dispatchEvent(new Event("portfolio-page-scroll-end"));
+    return;
+  }
+
+  const startTime = performance.now();
+  const easeInOutCubic = (progress) =>
+    progress < 0.5
+      ? 4 * progress * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+  const tick = (time) => {
+    const progress = Math.min((time - startTime) / duration, 1);
+    const eased = easeInOutCubic(progress);
+    window.scrollTo({ top: startTop + distance * eased, left: 0, behavior: "auto" });
+
+    if (progress < 1) {
+      pageScrollAnimationFrame = window.requestAnimationFrame(tick);
+      return;
+    }
+
+    window.scrollTo({ top, left: 0, behavior: "auto" });
+    root.classList.remove("is-page-scrolling");
+    window.__portfolioPageScrolling = false;
+    root.style.scrollBehavior = previousScrollBehavior;
+    pageScrollAnimationFrame = 0;
+    window.dispatchEvent(new Event("portfolio-page-scroll-end"));
+  };
+
+  pageScrollAnimationFrame = window.requestAnimationFrame(tick);
+}
+
 function mergeKnownGroup(defaults, source = {}) {
   return Object.fromEntries(
     Object.keys(defaults).map((key) => [key, source[key] ?? defaults[key]]),
@@ -278,6 +338,50 @@ function loadVisualSettings() {
   } catch {
     return cloneSettings(defaultVisualSettings);
   }
+}
+
+function ViewportVideo({ className, src, type = "video/mp4" }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && document.visibilityState !== "hidden" && !window.__portfolioPageScrolling) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { rootMargin: "240px 0px", threshold: 0.01 },
+    );
+
+    const handleVisibilityChange = () => {
+      const rect = video.getBoundingClientRect();
+      const nearViewport = rect.bottom > -240 && rect.top < window.innerHeight + 240;
+      if (document.visibilityState === "hidden" || !nearViewport || window.__portfolioPageScrolling) video.pause();
+      else video.play().catch(() => {});
+    };
+
+    observer.observe(video);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("portfolio-page-scroll-end", handleVisibilityChange);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("portfolio-page-scroll-end", handleVisibilityChange);
+      video.pause();
+    };
+  }, []);
+
+  return (
+    <video ref={videoRef} className={className} muted loop playsInline preload="none" aria-hidden="true">
+      <source src={src} type={type} />
+    </video>
+  );
 }
 
 function HeroVisual({ terminalSettings, terminalGrid, asciiSettings, onExplore, variant = "full" }) {
@@ -350,6 +454,12 @@ const stats = [
   { value: "5天/周", label: "可实习时间" },
 ];
 
+const awards = [
+  { result: "三等奖", name: "莉莉丝高校游戏创作大赛" },
+  { result: "优胜奖", name: "网易 MiniGame 初赛" },
+  { result: "第一名", name: "2026 CIGA 万物破元站" },
+];
+
 const projects = [
   {
     slug: "beast-incarnation",
@@ -358,7 +468,9 @@ const projects = [
     period: "2026.03 - 2026.06",
     image: "/assets/project-beast.png",
     tag: "GAME JAM",
+    featuredBadge: "莉莉丝全国游戏创作大赛三等奖",
     desc: "2D 像素风硬核精准平台跳跃游戏。围绕多形态无缝切换与底层物理法则重构，验证狼、蛙、猫、羊等动物动能规律带来的操作心流。",
+    contributions: ["设计多动物形态切换与差异化动能规则", "完成关卡白盒、路线节奏与难度迭代", "参与 Unity 核心机制实现和物理参数调优"],
     link: "https://www.bilibili.com/video/BV14L5d66EHm/",
   },
   {
@@ -366,9 +478,10 @@ const projects = [
     title: "木头喵",
     meta: "TapTap 制造 / 主策划",
     period: "2026.05",
-    image: "/assets/project-woodcat.png",
+    image: "/assets/project-woodcat-web.webp",
     tag: "GAME JAM",
     desc: "双人欢乐乱斗派对游戏。以物理碰撞、载具机制、地形博弈为核心，在短周期内完成创意提出、核心乐趣验证和可玩版本交付。",
+    contributions: ["担任主策划并确定双人乱斗的核心玩法", "设计载具、碰撞与地形博弈机制", "组织试玩反馈并推进短周期版本迭代"],
     link: "https://www.taptap.cn/app/864971",
   },
   {
@@ -377,8 +490,10 @@ const projects = [
     meta: "像素 / 多角色 / 关卡节奏设计",
     period: "待补充",
     image: "/assets/project-peakrush.png",
+    demoVideo: "/assets/projects/endless-rush-hour-demo.mp4",
     tag: "COMPETITION",
     desc: "一款高密度关卡推进的像素动作项目。通过持续障碍、路线分流与节奏压迫，测试玩家在短时间内做决策的爽感曲线。",
+    contributions: ["设计多角色能力与切换时机", "规划障碍密度、路线分流和关卡节奏", "根据试玩结果调整操作反馈与难度曲线"],
     link: "#contact",
   },
   {
@@ -386,9 +501,14 @@ const projects = [
     title: "神人猎头公司",
     meta: "Solo Developer / AI Agent / 经营模拟",
     period: "2026.06 - 至今",
-    image: "/assets/project-agent.png",
+    image: "/assets/project-agent-web.webp",
+    demoVideo: "/assets/projects/headhunter-company-demo.mp4",
+    feedbackImage: "/assets/projects/headhunter-feedback.png",
+    feedbackMetric: "4000+ 下载",
+    feedbackText: "上线后获得 4000+ 下载，说明作品已经有真实玩家触达与试玩反馈。",
     tag: "COMPETITION",
     desc: "基于 AI Agent 工作流构建的黑色幽默模拟经营游戏。接入 Qwen 模型完成语义评分，驱动求职者探查、包装售卖与经营扩张循环。",
+    contributions: ["独立完成玩法、程序与整体产品闭环", "接入 Qwen 模型并设计语义评分规则", "搭建求职者探查、包装售卖和经营扩张循环"],
     link: "https://www.taptap.cn/moment/813589271922344237",
   },
   {
@@ -397,8 +517,10 @@ const projects = [
     meta: "Shader / VFX / 画面复刻",
     period: "待补充",
     image: "/assets/project-beast.png",
+    demoVideo: "/assets/projects/balatro-shader-demo.mp4",
     tag: "RECREATION",
     desc: "用于展示对小丑牌视觉风格的 Shader 复刻、卡面发光与整体特效还原。后续可替换为真实过程截图或动图。",
+    contributions: ["拆解小丑牌卡面形变和色彩流动效果", "实现卡面发光、噪声扰动与像素化 Shader", "完成 Unity WebGL 展示版本和交互调试"],
     link: "#contact",
   },
   {
@@ -406,23 +528,30 @@ const projects = [
     title: "UE5 复刻捷丰 3C",
     meta: "UE5 / 角色控制 / 技能系统",
     period: "待补充",
-    image: "/assets/project-agent.png",
+    image: "/assets/project-ue5-valorant-web.webp",
+    demoVideo: "/assets/projects/ue5-jett-demo.mp4",
     tag: "RECREATION",
     desc: "在 UE5 中复刻捷丰的移动、跳跃、冲刺与技能框架，重点展示 3C 手感、输入响应和技能连招结构。",
+    contributions: ["复刻移动、跳跃、冲刺与空中控制", "调试镜头、输入响应和角色 3C 手感", "搭建技能状态、冷却与连招框架"],
     link: "#contact",
   },
 ];
 
 const FIRST_PROJECT_PAGE = 2;
 const LAST_PROJECT_PAGE = FIRST_PROJECT_PAGE + projects.length - 1;
+const FAVORITE_PAGE_COUNT = 6;
 const STRENGTHS_PAGE = LAST_PROJECT_PAGE + 1;
-const CONTACT_PAGE = STRENGTHS_PAGE + 1;
-const PROFILE_PAGE = CONTACT_PAGE + 1;
+const LAST_FAVORITE_PAGE = STRENGTHS_PAGE + FAVORITE_PAGE_COUNT - 1;
+const ACTIVITIES_PAGE = LAST_FAVORITE_PAGE + 1;
+const CONTACT_PAGE = ACTIVITIES_PAGE + 1;
+const PROFILE_PAGE = CONTACT_PAGE;
 const PAGE_COUNT = PROFILE_PAGE + 1;
 
 function getNavIndexForPage(page) {
-  if (page === PROFILE_PAGE) return 2;
-  if (page >= FIRST_PROJECT_PAGE && page < PROFILE_PAGE) return 1;
+  if (page >= CONTACT_PAGE) return 4;
+  if (page === ACTIVITIES_PAGE) return 3;
+  if (page >= STRENGTHS_PAGE && page <= LAST_FAVORITE_PAGE) return 2;
+  if (page >= FIRST_PROJECT_PAGE && page <= LAST_PROJECT_PAGE) return 1;
   return 0;
 }
 
@@ -449,6 +578,270 @@ const strengths = [
   },
 ];
 
+const favoriteGameModules = [
+  {
+    slug: "sports-fc",
+    icon: Goal,
+    label: "Sports",
+    video: "/assets/favorites/fc26/favorite-fc26-full.mp4",
+    backgroundImage: "/assets/favorites/fc26/messi-world-cup-trophy.jpg",
+    poster: "/assets/favorites/fc26/favorite-fc26-full.jpg",
+    title: "体育类",
+    playtime: "1500h+",
+    games: ["EA SPORTS FC 26", "Career Mode", "Ultimate Team"],
+    text: "喜欢足球游戏中观察空间、调整阵型与把握进攻节奏的过程，每一次攻防转换都是一场即时战术博弈。",
+  },
+  {
+    slug: "soulslike-elden-ring",
+    icon: Skull,
+    label: "Soulslike",
+    video: "/assets/favorites/fc26/favorite-soulslike.mp4",
+    poster: "/assets/favorites/fc26/favorite-soulslike.jpg",
+    title: "魂类",
+    playtime: "500h+",
+    games: ["Elden Ring", "Dark Souls", "Sekiro"],
+    text: "享受观察敌人、理解招式并在一次次失败中掌握战斗节奏，最终靠判断与执行跨过强敌。",
+  },
+  {
+    slug: "action-celeste",
+    icon: Mountain,
+    label: "Action Platformer",
+    video: "/assets/favorites/fc26/favorite-action-celeste.mp4",
+    poster: "/assets/favorites/fc26/favorite-action-celeste.jpg",
+    title: "动作类",
+    playtime: "500h+",
+    games: ["Celeste", "Super Meat Boy", "Katana ZERO"],
+    text: "喜欢精准操作、快速重试和清晰反馈共同形成的心流，让困难关卡成为不断理解动作与路线的过程。",
+  },
+  {
+    slug: "roguelike-balatro",
+    icon: Dice5,
+    label: "Roguelike Deckbuilder",
+    video: "/assets/favorites/fc26/favorite-roguelike-balatro.mp4",
+    poster: "/assets/favorites/fc26/favorite-roguelike-balatro.jpg",
+    title: "肉鸽类",
+    playtime: "500h+",
+    games: ["Balatro", "Slay the Spire", "Hades"],
+    text: "偏爱简单规则与高上限组合，让数字、概率和构筑在每一局中产生不同的策略故事。",
+  },
+  {
+    slug: "fps-call-of-duty",
+    icon: Crosshair,
+    label: "First-Person Shooter",
+    video: "/assets/favorites/fc26/favorite-fps.mp4",
+    poster: "/assets/favorites/fc26/favorite-fps.jpg",
+    title: "FPS 类",
+    playtime: "500h+",
+    games: ["Call of Duty", "Titanfall 2", "Valorant"],
+    text: "关注枪械反馈、移动节奏、空间控制与瞬间决策，喜欢高速对抗中信息和操作共同带来的压迫感。",
+  },
+  {
+    slug: "racing",
+    icon: Gauge,
+    label: "Open-World Racing",
+    video: "/assets/favorites/fc26/favorite-racing-lego.mp4",
+    poster: "/assets/favorites/fc26/favorite-racing-lego.jpg",
+    title: "竞速类",
+    playtime: "100h+",
+    games: ["Forza Horizon", "Need for Speed", "The Crew"],
+    text: "喜欢速度、路线选择和开放世界探索结合的自由感，也关注车辆操控反馈与场景节奏带来的沉浸体验。",
+  },
+];
+
+const favoriteDetailArchives = {
+  "sports-fc": {
+    playtime: "1500h+",
+    playedGames: [
+      "EA SPORTS FC 系列",
+      "FIFA 15 至 FIFA 23",
+      "实况足球 / eFootball 系列",
+      "NBA 2K 系列",
+      "NBA Live 系列",
+      "麦登橄榄球系列",
+      "上旋高手系列",
+      "VR 网球系列",
+      "网球世界巡回赛系列",
+      "经理生涯模式",
+      "终极球队模式",
+    ],
+    achievements: [
+      { title: "Power Shot", text: "EA SPORTS FC 26 Steam 成就：Score a goal，完成一次进球。" },
+      { title: "PlayStyles+", text: "EA SPORTS FC 26 Steam 成就：Score a goal with an active PlayStyle+，使用激活的 PlayStyle+ 完成进球。" },
+      { title: "Tactical Designer", text: "EA SPORTS FC 26 Steam 成就：Create your own custom Tactic in Football Ultimate Team，创建自定义战术。" },
+    ],
+    story: [
+      "我是足球项目国家二级运动员，也一直很喜欢足球和各种体育运动。真实训练和比赛经历让我对空间、身体对抗、跑位选择和团队节奏有更直接的感受。",
+      "体育给我的性格里留下了很明显的一部分：开朗、阳光、愿意协作，也愿意在一次次训练和比赛里不断复盘自己。这种热爱也延伸到了我玩体育类游戏的方式里。",
+      "FC 系列对我来说不是单纯的足球操作游戏，更像一个长期经营和即时战术结合的系统。我最喜欢的部分，是在经理生涯里从低级别联赛开始，用青训、转会和战术调整一点点把球队带上去。",
+      "在这个过程中，我会研究球员动作模组、比赛风格和战术板之间的关系：什么样的球员适合高压逼抢，什么样的边路配置能制造空间，什么样的中场组合能让球队稳定推进。这些经验也让我更敏感于游戏系统如何把现实运动抽象成可操作的规则。",
+    ],
+    images: [
+      { src: "/assets/favorites/sports/football-medals.png", alt: "足球比赛奖牌照" },
+      { src: "/assets/favorites/sports/national-level-2-certificate.png", alt: "足球项目国家二级运动员证书" },
+    ],
+  },
+  "soulslike-elden-ring": {
+    playtime: "500h+",
+    playedGames: [
+      "艾尔登法环",
+      "黑暗之魂 3",
+      "只狼",
+      "匹诺曹的谎言",
+      "仁王系列",
+      "卧龙：苍天陨落",
+      "遗迹系列",
+      "黑神话：悟空",
+    ],
+    achievements: [
+      { title: "Shardbearer Malenia", text: "ELDEN RING Steam 成就：Defeated Shardbearer Malenia，击败碎片君王玛莲妮亚。" },
+      { title: "Age of the Stars", text: "ELDEN RING Steam 成就：Achieved the “Age of the Stars” ending，达成星星时代结局。" },
+      { title: "Elden Lord", text: "ELDEN RING Steam 成就：Achieved the “Elden Lord” ending，达成艾尔登之王结局。" },
+    ],
+    story: [
+      "在数百小时的游玩中，我不仅享受跨越极高难度的成就感，更习惯以专业视角拆解其底层逻辑。",
+      "我深度研究了魂类游戏的 3C 设计，特别是复杂的角色输入缓存机制、受击硬直的精确计算，以及面对巨型多动症 Boss 时，镜头锁定逻辑与空间感处理的优劣势。",
+      "此外，我对游戏内的高精视觉特效与动作表现有极高的关注度。我经常复盘其如何通过材质更迭、粒子系统与动作前摇的配合，来塑造史诗级张力和精确的打击反馈。",
+      "我也会尝试在底层引擎中逆向推导或复现这些特效与角色控制器的实现逻辑。对复杂 Boss AI 状态机、基于动量的物理反馈等硬核机制的偏爱，让我不仅是在体验内容，更是在持续积累动作游戏开发的实战化参考库。",
+    ],
+  },
+  "action-celeste": {
+    playtime: "500h+",
+    playedGames: [
+      "蔚蓝",
+      "超级肉肉哥",
+      "武士零",
+      "空洞骑士",
+      "奥日系列",
+      "死亡细胞",
+      "茶杯头",
+      "铲子骑士",
+      "信使",
+    ],
+    achievements: [
+      { title: "Celeste Mountain", text: "Celeste Steam 成就：Complete Chapter 7，完成第 7 章并登上山顶。" },
+      { title: "Heart of the Mountain", text: "Celeste Steam 成就：Collect the Crystal Heart in Chapter 8，收集第 8 章水晶之心。" },
+      { title: "Farewell", text: "Celeste Steam 成就：Complete Chapter 9，完成第 9 章 Farewell。" },
+    ],
+    story: [
+      "在超过 500 小时的硬核平台跳跃游戏体验中，我不仅追求操作的极限，更习惯于逆向拆解这些顶尖作品的底层 3C 设计。",
+      "我极度关注角色控制器的调优，特别是针对基于动量的复杂物理反馈、不同形态与状态切换时的惯性保留，以及土狼时间和跳跃输入缓冲的精确帧数设置。",
+      "我经常深入复盘《蔚蓝》中极其严苛但又绝对公平的微操手感是如何通过底层代码实现的，并把这种拆解方式反向应用到自己的动作系统设计里。",
+    ],
+  },
+  "roguelike-balatro": {
+    playtime: "500h+",
+    playedGames: [
+      "小丑牌",
+      "杀戮尖塔",
+      "哈迪斯",
+      "死亡细胞",
+      "以撒的结合",
+      "雨中冒险 2",
+      "挺进地牢",
+      "吸血鬼幸存者",
+      "盗贼遗产系列",
+    ],
+    achievements: [
+      { title: "Ante Upper!", text: "Balatro Steam 成就：Reach Ante 8，进入 Ante 8。" },
+      { title: "Heads Up", text: "Balatro Steam 成就：Win a Run，完成并赢下一局。" },
+      { title: "Legendary", text: "Balatro Steam 成就：Discover a Legendary Joker，发现一张传奇小丑牌。" },
+    ],
+    story: [
+      "在超过 500 小时的肉鸽类游戏体验中，我最关注的不是单局通关结果，而是随机性、构筑路线和玩家决策之间如何形成可重复但不雷同的系统循环。",
+      "我会拆解《小丑牌》《杀戮尖塔》等作品如何通过少量基础规则，叠加倍率、牌组压缩、遗物协同和风险收益选择，制造出极高的策略上限。",
+      "在体验过程中，我尤其关注数值成长曲线、奖励池设计、稀有度分布和失败后的再开局动机。好的肉鸽系统不是简单堆随机，而是让玩家在不确定性里持续做有意义的判断。",
+      "这种偏好也直接影响我对系统设计的理解：我会把每一次构筑看作一个可验证的玩法假设，并思考如何通过反馈、动画、音效和视觉刺激，把复杂数值变化转化成玩家能感知到的爽感。",
+    ],
+  },
+  "fps-call-of-duty": {
+    playtime: "500h+",
+    playedGames: [
+      "使命召唤系列",
+      "泰坦陨落 2",
+      "无畏契约",
+      "Apex 英雄",
+      "战地系列",
+      "反恐精英系列",
+      "彩虹六号：围攻",
+      "守望先锋系列",
+      "绝地求生",
+    ],
+    achievements: [
+      { title: "Legendary Pilot", text: "Titanfall 2 Steam 成就：Complete the Campaign on Master，以大师难度完成战役。" },
+      { title: "...Becomes the Master", text: "Titanfall 2 Steam 成就：Place in the top 3 on the Gauntlet scoreboard，在铁驭试炼排行榜进入前三。" },
+      { title: "Every Nook and Cranny", text: "Titanfall 2 Steam 成就：Find All Collectibles，收集全部收藏品。" },
+    ],
+    story: [
+      "在超过 500 小时的 FPS 类游戏体验中，我不仅关注对枪结果，更习惯拆解移动、瞄准、开火、受击和击杀反馈之间的完整 3C 链路。",
+      "我会重点观察枪械后坐力曲线、开镜速度、镜头晃动、命中音效和击杀提示如何共同构成“枪感”。一次击杀是否爽快，往往不是单个数值决定，而是多层反馈在极短时间内完成了正确叠加。",
+      "在《使命召唤》《泰坦陨落 2》《无畏契约》等游戏中，我会复盘地图动线、交火距离、掩体分布和转点节奏，理解关卡空间如何引导玩家做出战术选择。",
+      "这种长期体验让我更关注射击游戏中输入响应与信息表达的平衡：玩家必须能在高速对抗里快速读懂空间、敌人状态和自身风险，这对 UI、音画反馈和角色控制器都有很高要求。",
+    ],
+  },
+  racing: {
+    playtime: "100h+",
+    playedGames: [
+      "极限竞速：地平线系列",
+      "极限竞速系列",
+      "极品飞车系列",
+      "飙酷车神系列",
+      "乐高 2K 竞速",
+      "F1 系列",
+      "尘埃拉力赛系列",
+      "神力科莎",
+    ],
+    achievements: [
+      { title: "Welcome to México", text: "Forza Horizon 5 Steam 成就：Arrive at Horizon Festival México，抵达墨西哥 Horizon 嘉年华。" },
+      { title: "Race into Action", text: "Forza Horizon 5 Steam 成就：Complete any Horizon Race Event，完成任意 Horizon 赛事。" },
+      { title: "Adaptable", text: "Forza Horizon 5 Steam 成就：Complete the On a Wing and a Prayer Showcase Event，完成展示赛事。" },
+    ],
+    story: [
+      "在 100 小时以上的竞速类游戏体验中，我最关注的是速度感如何被拆解成可控的驾驶反馈，而不是单纯依赖画面模糊或速度数值。",
+      "我会观察车辆转向响应、漂移入弯、抓地力变化、碰撞反馈和镜头跟随逻辑如何共同塑造驾驶手感。不同竞速游戏之间的差异，往往藏在油门响应、刹车距离和车身惯性这些细节里。",
+      "在《极限竞速：地平线》《极品飞车》《飙酷车神》等作品中，我也会研究开放世界道路设计如何服务驾驶节奏：长直道制造速度释放，连续弯道提供操作密度，地标和天气变化则强化探索动机。",
+      "这种体验让我理解到，竞速游戏的核心并不只是“快”，而是让玩家在高速移动中依然拥有清晰判断、路线选择和可预期反馈。这对相机、物理参数和场景节奏设计都有很强的参考价值。",
+    ],
+  },
+};
+
+function getFavoriteDetailArchive(favorite) {
+  return (
+    favoriteDetailArchives[favorite.slug] || {
+      playtime: "500h+",
+      playedGames: favorite.games,
+      achievements: favorite.games.map((game) => ({
+        title: game,
+        text: "这个条目可以后续替换成你的具体游玩记录、截图或成就。",
+      })),
+      story: [favorite.text],
+    }
+  );
+}
+
+const activityExperiences = [
+  {
+    icon: Gamepad2,
+    type: "Game Jam",
+    title: "限时游戏创作",
+    period: "2026",
+    text: "参与短周期 GameJam，从玩法提案、白盒验证到可玩版本交付，完成《万兽化身》等项目。",
+  },
+  {
+    icon: Sparkles,
+    type: "TapTap Creator",
+    title: "TapTap 制造活动",
+    period: "2026.05",
+    text: "参与多人协作创作活动，负责《木头喵》的核心玩法策划、体验验证和版本推进。",
+  },
+  {
+    icon: Trophy,
+    type: "Competition",
+    title: "高校游戏创作赛事",
+    period: "Top 3",
+    text: "围绕玩法创新与完整 Demo 交付参与高校创作比赛，并获得三等奖。",
+  },
+];
+
 const identityTags = [
   { label: "#游戏开发", icon: Code2 },
   { label: "#技术策划", icon: FolderKanban },
@@ -466,14 +859,16 @@ const navItems = [
   { label: "首页", href: "#top", icon: Home },
   { label: "经历", href: "#profile", icon: UserRound },
   { label: "项目", href: "#projects", icon: FolderKanban },
-  { label: "优势", href: "#strengths", icon: Sparkles },
+  { label: "最爱", href: "#strengths", icon: Sparkles },
   { label: "联系", href: "#contact", icon: Mail },
 ];
 
 function PortfolioApp({
   initialProjectIndex = 0,
+  initialFavoriteIndex = 0,
   isActive = true,
   onOpenProject,
+  onOpenFavorite,
   routeTransitionActive = false,
   visualSettings,
   editorOpen = false,
@@ -483,6 +878,7 @@ function PortfolioApp({
   const [activeProjectIndex, setActiveProjectIndex] = useState(() =>
     Math.min(projects.length - 1, Math.max(0, initialProjectIndex)),
   );
+  const [activeFavoriteIndex, setActiveFavoriteIndex] = useState(0);
   const [activeNavIndex, setActiveNavIndex] = useState(0);
   const transitionRef = useRef(null);
   const transitionProgressRef = useRef(0);
@@ -492,6 +888,7 @@ function PortfolioApp({
   const profileRef = useRef(null);
   const projectsRef = useRef(null);
   const strengthsRef = useRef(null);
+  const activitiesRef = useRef(null);
   const contactRef = useRef(null);
   const terminalSettings = visualSettings.terminal;
   const asciiSettings = visualSettings.ascii;
@@ -515,6 +912,8 @@ function PortfolioApp({
     () => [
       { label: "主页", href: "#top" },
       { label: "项目", href: "#projects" },
+      { label: "最爱", href: "#strengths" },
+      { label: "活动", href: "#activities" },
       { label: "关于我", href: "#profile" },
     ],
     [],
@@ -534,30 +933,54 @@ function PortfolioApp({
 
     const params = new URLSearchParams(window.location.search);
     const shouldRestoreProjects = params.get("return") === "projects" || window.location.hash === "#projects";
+    const shouldRestoreFavorites = window.location.hash === "#strengths";
 
-    if (!shouldRestoreProjects) return undefined;
-
-    const projectTop = projectsRef.current?.offsetTop;
-    if (typeof projectTop !== "number") return undefined;
-
-    const restoredProjectIndex = Math.min(projects.length - 1, Math.max(0, initialProjectIndex));
+    if (!shouldRestoreProjects && !shouldRestoreFavorites) return undefined;
 
     transitionProgressRef.current = 1;
     setTransitionProgress(1);
     setTransitionPhase("idle");
-    activePageRef.current = FIRST_PROJECT_PAGE + restoredProjectIndex;
-    setActiveProjectIndex(restoredProjectIndex);
-    setActiveNavIndex(1);
 
     const root = document.documentElement;
     const previousScrollBehavior = root.style.scrollBehavior;
     root.style.scrollBehavior = "auto";
-    window.scrollTo(0, projectTop + restoredProjectIndex * window.innerHeight);
+
+    if (shouldRestoreProjects) {
+      const projectTop = projectsRef.current?.offsetTop;
+      if (typeof projectTop !== "number") {
+        root.style.scrollBehavior = previousScrollBehavior;
+        return undefined;
+      }
+
+      const restoredProjectIndex = Math.min(projects.length - 1, Math.max(0, initialProjectIndex));
+      const restoredProjectPage = FIRST_PROJECT_PAGE + restoredProjectIndex;
+      activePageRef.current = restoredProjectPage;
+      setActiveProjectIndex(restoredProjectIndex);
+      setActiveNavIndex(getNavIndexForPage(restoredProjectPage));
+      window.scrollTo(0, projectTop + restoredProjectIndex * window.innerHeight);
+      window.history.replaceState(null, "", "/#projects");
+    }
+
+    if (shouldRestoreFavorites) {
+      const favoriteTop = strengthsRef.current?.offsetTop;
+      if (typeof favoriteTop !== "number") {
+        root.style.scrollBehavior = previousScrollBehavior;
+        return undefined;
+      }
+
+      const restoredFavoriteIndex = Math.min(favoriteGameModules.length - 1, Math.max(0, initialFavoriteIndex));
+      const restoredFavoritePage = STRENGTHS_PAGE + restoredFavoriteIndex;
+      activePageRef.current = restoredFavoritePage;
+      setActiveFavoriteIndex(restoredFavoriteIndex);
+      setActiveNavIndex(getNavIndexForPage(restoredFavoritePage));
+      window.scrollTo(0, favoriteTop + restoredFavoriteIndex * window.innerHeight);
+      window.history.replaceState(null, "", "/#strengths");
+    }
+
     root.style.scrollBehavior = previousScrollBehavior;
-    window.history.replaceState(null, "", "/#projects");
 
     return undefined;
-  }, [initialProjectIndex, isActive]);
+  }, [initialFavoriteIndex, initialProjectIndex, isActive]);
 
   useEffect(() => {
     if (isActive && !routeTransitionActive) {
@@ -569,7 +992,7 @@ function PortfolioApp({
     if (!isActive) return undefined;
 
     const transitionDuration = 1500;
-    const sectionDuration = 720;
+    const sectionDuration = 520;
     const projectSectionDuration = 520;
 
     const getPageTop = (page) => {
@@ -577,9 +1000,11 @@ function PortfolioApp({
       if (page >= FIRST_PROJECT_PAGE && page <= LAST_PROJECT_PAGE) {
         return (projectsRef.current?.offsetTop ?? 0) + (page - FIRST_PROJECT_PAGE) * window.innerHeight;
       }
-      if (page === STRENGTHS_PAGE) return strengthsRef.current?.offsetTop ?? 0;
-      if (page === CONTACT_PAGE) return contactRef.current?.offsetTop ?? 0;
-      if (page === PROFILE_PAGE) return profileRef.current?.offsetTop ?? 0;
+      if (page >= STRENGTHS_PAGE && page <= LAST_FAVORITE_PAGE) {
+        return (strengthsRef.current?.offsetTop ?? 0) + (page - STRENGTHS_PAGE) * window.innerHeight;
+      }
+      if (page === ACTIVITIES_PAGE) return activitiesRef.current?.offsetTop ?? 0;
+      if (page === CONTACT_PAGE || page === PROFILE_PAGE) return contactRef.current?.offsetTop ?? 0;
       return 0;
     };
 
@@ -603,10 +1028,25 @@ function PortfolioApp({
         }
       }
 
-      let closestPage = STRENGTHS_PAGE;
+      const favoriteSection = strengthsRef.current;
+      if (favoriteSection) {
+        const favoriteTop = favoriteSection.offsetTop;
+        const favoriteBottom = favoriteTop + favoriteSection.offsetHeight - window.innerHeight;
+        if (window.scrollY >= favoriteTop - 4 && window.scrollY <= favoriteBottom + 4) {
+          return Math.min(
+            LAST_FAVORITE_PAGE,
+            Math.max(
+              STRENGTHS_PAGE,
+              STRENGTHS_PAGE + Math.round((window.scrollY - favoriteTop) / window.innerHeight),
+            ),
+          );
+        }
+      }
+
+      let closestPage = ACTIVITIES_PAGE;
       let closestDistance = Number.POSITIVE_INFINITY;
 
-      [STRENGTHS_PAGE, CONTACT_PAGE, PROFILE_PAGE].forEach((page) => {
+      [ACTIVITIES_PAGE, CONTACT_PAGE].forEach((page) => {
         const distance = Math.abs(getPageTop(page) - window.scrollY);
         if (distance < closestDistance) {
           closestDistance = distance;
@@ -617,14 +1057,6 @@ function PortfolioApp({
       return closestPage;
     };
 
-    const scrollToSection = (section) => {
-      if (!section) return;
-      window.scrollTo({
-        top: section.offsetTop,
-        behavior: "smooth",
-      });
-    };
-
     const triggerPage = (targetPage) => {
       transitionAnimatingRef.current = true;
       activePageRef.current = targetPage;
@@ -633,9 +1065,12 @@ function PortfolioApp({
       if (targetPage >= FIRST_PROJECT_PAGE && targetPage <= LAST_PROJECT_PAGE) {
         setActiveProjectIndex(targetPage - FIRST_PROJECT_PAGE);
       }
+      if (targetPage >= STRENGTHS_PAGE && targetPage <= LAST_FAVORITE_PAGE) {
+        setActiveFavoriteIndex(targetPage - STRENGTHS_PAGE);
+      }
 
       if (targetPage <= 1) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        animateToScrollPosition(0);
         setTransitionPhase(targetPage === 1 ? "enter-tv" : "leave-tv");
         const targetProgress = targetPage === 1 ? 1 : 0;
         transitionProgressRef.current = targetProgress;
@@ -644,10 +1079,7 @@ function PortfolioApp({
         setTransitionPhase("idle");
         transitionProgressRef.current = 1;
         setTransitionProgress(1);
-        window.scrollTo({
-          top: getPageTop(targetPage),
-          behavior: "smooth",
-        });
+        animateToScrollPosition(getPageTop(targetPage));
       }
 
       if (transitionTimerRef.current) {
@@ -678,6 +1110,17 @@ function PortfolioApp({
       event.preventDefault();
 
       if (transitionAnimatingRef.current) return;
+
+      const lastPage = PAGE_COUNT - 1;
+      const lastPageTop = getPageTop(lastPage);
+      if (
+        wantsForward &&
+        (activePageRef.current >= lastPage || window.scrollY >= lastPageTop - 4)
+      ) {
+        activePageRef.current = lastPage;
+        setActiveNavIndex(getNavIndexForPage(lastPage));
+        return;
+      }
 
       const currentPage = getCurrentPage();
       activePageRef.current = currentPage;
@@ -716,7 +1159,7 @@ function PortfolioApp({
     setTransitionPhase("enter-tv");
     transitionProgressRef.current = 1;
     setTransitionProgress(1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    animateToScrollPosition(0);
 
     if (transitionTimerRef.current) {
       window.clearTimeout(transitionTimerRef.current);
@@ -733,6 +1176,8 @@ function PortfolioApp({
     const pageByHref = {
       "#top": 0,
       "#projects": FIRST_PROJECT_PAGE,
+      "#strengths": STRENGTHS_PAGE,
+      "#activities": ACTIVITIES_PAGE,
       "#profile": PROFILE_PAGE,
     };
     const targetPage = pageByHref[item?.href];
@@ -751,27 +1196,33 @@ function PortfolioApp({
       transitionProgressRef.current = 1;
       setTransitionProgress(1);
       setTransitionPhase("enter-tv");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      animateToScrollPosition(0);
       return;
     }
 
     if (index >= projects.length) {
       activePageRef.current = STRENGTHS_PAGE;
-      setActiveNavIndex(1);
-      window.scrollTo({
-        top: strengthsRef.current?.offsetTop ?? 0,
-        behavior: "smooth",
-      });
+      setActiveFavoriteIndex(0);
+      setActiveNavIndex(getNavIndexForPage(STRENGTHS_PAGE));
+      animateToScrollPosition(strengthsRef.current?.offsetTop ?? 0);
       return;
     }
 
     setActiveProjectIndex(index);
     activePageRef.current = index + FIRST_PROJECT_PAGE;
     setActiveNavIndex(1);
-    window.scrollTo({
-      top: (projectsRef.current?.offsetTop ?? 0) + index * window.innerHeight,
-      behavior: "smooth",
-    });
+    animateToScrollPosition((projectsRef.current?.offsetTop ?? 0) + index * window.innerHeight);
+  };
+
+  const selectFavorite = (index) => {
+    const targetIndex = Math.min(favoriteGameModules.length - 1, Math.max(0, index));
+    const targetPage = STRENGTHS_PAGE + targetIndex;
+    setActiveFavoriteIndex(targetIndex);
+    activePageRef.current = targetPage;
+    setActiveNavIndex(getNavIndexForPage(targetPage));
+    animateToScrollPosition(
+      (strengthsRef.current?.offsetTop ?? 0) + targetIndex * window.innerHeight,
+    );
   };
 
   const openProjectDetails = (project, sourceElement) => {
@@ -932,24 +1383,46 @@ function PortfolioApp({
         </div>
       </section>
 
-      <section ref={strengthsRef} className="section strengths pageSection" id="strengths">
-        <div className="shell sectionHeader split">
+      <FavoriteTimeline
+        sectionRef={strengthsRef}
+        items={favoriteGameModules}
+        activeIndex={activeFavoriteIndex}
+        onSelect={selectFavorite}
+        onOpenDetails={onOpenFavorite}
+      />
+
+      <section ref={activitiesRef} className="activitySection pageSection" id="activities">
+        <Suspense fallback={<div className="activityLoading">Loading lanyard...</div>}>
+          <ActivityLanyardBoard items={activityExperiences} />
+        </Suspense>
+      </section>
+
+      {false && (
+      <section className="section favorites pageSection">
+        <div className="projectFanHeading favoriteHeading">
           <div>
-            <p className="sectionKicker">Capability</p>
-            <h2>个人优势</h2>
+            <p>Favorite Games</p>
+            <h2>我的最爱</h2>
           </div>
-          <p>更擅长把抽象想法快速落成可玩版本，再通过数据、手感和玩家反馈继续收敛。</p>
         </div>
-        <div className="shell strengthGrid">
-          {strengths.map((item) => {
+        <div className="shell favoriteGrid">
+          {favoriteGameModules.map((item, index) => {
             const Icon = item.icon;
             return (
-              <BorderGlow key={item.title} className="strengthGlow" {...glowProps}>
-                <article className="strengthCard">
-                  <div className="iconBox">
-                    <Icon size={24} />
+              <BorderGlow key={item.title} className="favoriteGlow" {...glowProps}>
+                <article className="favoriteCard" style={{ "--favorite-index": index }}>
+                  <div className="favoriteCardTop">
+                    <div className="favoriteIconBox">
+                      <Icon size={24} />
+                    </div>
+                    <span>{item.label}</span>
                   </div>
                   <h3>{item.title}</h3>
+                  <div className="favoriteGameList" aria-label={`${item.title}代表游戏`}>
+                    {item.games.map((game) => (
+                      <span key={game}>{game}</span>
+                    ))}
+                  </div>
                   <p>{item.text}</p>
                 </article>
               </BorderGlow>
@@ -957,37 +1430,64 @@ function PortfolioApp({
           })}
         </div>
       </section>
+      )}
 
-      <section ref={contactRef} className="contactFinal pageSection" id="contact">
-        <div className="shell contactLayout">
-          <BorderGlow className="contactGlow contactIntroGlow" {...glowProps}>
-            <div>
-              <p className="sectionKicker">Contact</p>
-              <h2>想一起做一个更快成型、更好玩的游戏原型吗？</h2>
-              <p>
-                我正在寻找游戏策划、游戏程序或 AI Native 创作相关实习机会。可参与玩法原型、关卡白盒、3C 手感、AI 工具链和 Demo 交付。
-              </p>
+      <section ref={contactRef} className="aboutFinal pageSection" id="profile">
+        <div className="aboutFinalGrid">
+          <article className="aboutPixelPanel aboutIntroPanel">
+            <p className="aboutEyebrow"><span />ABOUT ME</p>
+            <h2>关于我</h2>
+            <p>
+              你好，我是王俊涛，也可以叫我羊哞哞。我是一名游戏策划与游戏程序开发者，目前就读于广东技术师范大学软件工程专业。
+              我喜欢从玩法推演出发，用 Unity、UE5 和 AI 工具快速完成原型、验证手感，并把想法真正做成可以玩的 Demo。
+            </p>
+          </article>
+
+          <article className="aboutPixelPanel aboutContactPanel">
+            <h3>求职意向 & 联系方式</h3>
+            <div className="aboutInfoRows">
+              <div><span>求职方向</span><strong>游戏策划 / 游戏程序</strong></div>
+              <div><span>专业背景</span><strong>软件工程</strong></div>
+              <div><span>实习时间</span><strong>每周 5 天 / 6 月底可到岗</strong></div>
+              <div><span>联系邮箱</span><a href="mailto:3414884729@qq.com">3414884729@qq.com</a></div>
+              <div><span>联系电话</span><a href="tel:18359795479">18359795479</a></div>
             </div>
-          </BorderGlow>
-          <BorderGlow className="contactGlow contactPanelGlow" {...glowProps}>
-            <div className="contactPanel">
-              <Trophy size={28} />
-              <a href="mailto:3414884729@qq.com">3414884729@qq.com</a>
-              <a href="tel:18359795479">18359795479</a>
-              <span>QQ 3414884729</span>
-              <a className="primaryButton" href="mailto:3414884729@qq.com">
-                发送邮件
-                <ArrowUpRight size={20} />
-              </a>
+          </article>
+
+          <article className="aboutPixelPanel aboutToolPanel">
+            <h3>技能与工具集</h3>
+            <div className="aboutToolTags">
+              {[
+                "Unity",
+                "UE5",
+                "C# / C++",
+                "玩法原型",
+                "关卡白盒",
+                "3C 手感",
+                "Shader / VFX",
+                "AI Native",
+                "Cursor",
+                "ChatGPT / Gemini",
+              ].map((tool) => <span key={tool}>{tool}</span>)}
             </div>
-          </BorderGlow>
+          </article>
+
+          <article className="aboutPixelPanel aboutAwardsPanel" aria-label="我的奖项">
+            <div className="aboutAwardsBox">
+              {awards.map((award) => (
+                <div className="aboutAwardItem" key={award.name}>
+                  <strong>{award.result}</strong>
+                  <span>{award.name}</span>
+                </div>
+              ))}
+            </div>
+          </article>
         </div>
       </section>
 
-      <section ref={profileRef} className="profile section pageSection" id="profile">
-        <video className="profileVideoBg" autoPlay muted loop playsInline aria-hidden="true">
-          <source src="/assets/profile-room-video.mp4" type="video/mp4" />
-        </video>
+      {false && (
+      <section ref={profileRef} className="profile section pageSection">
+        <ViewportVideo className="profileVideoBg" src="/assets/profile-room-video.mp4" />
         <div className="shell profileLayout">
           <BorderGlow className="profileGlow portraitGlow" {...glowProps}>
             <div className="portraitWrap">
@@ -1040,23 +1540,128 @@ function PortfolioApp({
           ))}
         </div>
       </section>
+      )}
 
+    </main>
+  );
+}
+
+function FavoriteDetail({ favorite, onBack }) {
+  const Icon = favorite.icon;
+  const archive = getFavoriteDetailArchive(favorite);
+
+  return (
+    <main className="favoriteDetailPage">
+      <div className="favoriteDetailScene" aria-hidden="true">
+        {favorite.video ? (
+          <video className="favoriteDetailVideo" muted loop playsInline autoPlay preload="metadata" poster={favorite.poster || undefined}>
+            <source src={favorite.video} type="video/mp4" />
+          </video>
+        ) : favorite.backgroundImage || favorite.poster ? (
+          <img className="favoriteDetailImage" src={favorite.backgroundImage || favorite.poster} alt="" />
+        ) : null}
+        <div className="favoriteDetailOverlay" />
+      </div>
+
+      <header className="favoriteDetailHeader">
+        <a href="/#strengths" className="favoriteBackButton" onClick={onBack}>
+          <ArrowLeft size={18} />
+          返回最爱列表
+        </a>
+        <span>羊哞哞 / FAVORITE GAMES</span>
+      </header>
+
+      <section className="favoriteDetailHero">
+        <div className="favoriteDetailContent">
+          <div className="favoriteDetailKicker">
+            <div className="favoriteDetailIcon" aria-hidden="true">
+              <Icon size={30} strokeWidth={2.2} />
+            </div>
+            <p>{favorite.label}</p>
+          </div>
+          <h1>{favorite.title}</h1>
+          <div className="favoriteDetailSummary">
+            <div className="favoritePlaytime">
+              <span>游玩时间</span>
+              <strong>{archive.playtime}</strong>
+            </div>
+            <p className="favoriteDetailLead">{favorite.text}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="favoriteDetailArchive" aria-label={`${favorite.title} 详细档案`}>
+        <article className="favoriteArchivePanel favoriteArchiveGames">
+          <p>PLAYED GAMES</p>
+          <h2>这个品类我玩过什么游戏</h2>
+          <div className="favoriteArchiveGameGrid">
+            {archive.playedGames.map((game) => (
+              <span key={game}>{game}</span>
+            ))}
+          </div>
+        </article>
+
+        <article className="favoriteArchivePanel favoriteArchiveAchievements">
+          <p>ACHIEVEMENTS</p>
+          <h2>我的一些游戏成就</h2>
+          <div className="favoriteAchievementList">
+            {archive.achievements.map((item) => (
+              <div key={item.title}>
+                <strong>{item.title}</strong>
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className={`favoriteArchivePanel favoriteArchiveStory${archive.images?.length ? "" : " hasNoImages"}`}>
+          <div>
+            <p>STORY</p>
+            <h2>我和这个游戏类型的故事</h2>
+            {archive.story.map((paragraph) => (
+              <span key={paragraph}>{paragraph}</span>
+            ))}
+          </div>
+          {archive.images?.length ? (
+            <figure className={archive.images?.length > 1 ? "favoriteStoryGallery" : undefined}>
+              {archive.images.map((image) => (
+                <img key={image.src} src={image.src} alt={image.alt} />
+              ))}
+            </figure>
+          ) : null}
+        </article>
+      </section>
     </main>
   );
 }
 
 function App() {
   const initialProjectSlug = new URLSearchParams(window.location.search).get("project");
+  const initialFavoriteSlug = new URLSearchParams(window.location.search).get("favorite");
   const [savedVisualSettings, setSavedVisualSettings] = useState(loadVisualSettings);
   const [draftVisualSettings, setDraftVisualSettings] = useState(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [projectSlug, setProjectSlug] = useState(initialProjectSlug);
+  const [favoriteSlug, setFavoriteSlug] = useState(initialFavoriteSlug);
   const [projectRouteTransition, setProjectRouteTransition] = useState(null);
   const [returnProjectIndex, setReturnProjectIndex] = useState(() =>
     Math.max(0, projects.findIndex((project) => project.slug === initialProjectSlug)),
   );
+  const [returnFavoriteIndex, setReturnFavoriteIndex] = useState(() =>
+    Math.max(0, favoriteGameModules.findIndex((favorite) => favorite.slug === initialFavoriteSlug)),
+  );
   const selectedProject = projects.find((project) => project.slug === projectSlug);
+  const selectedFavorite = favoriteGameModules.find((favorite) => favorite.slug === favoriteSlug);
   const visualSettings = draftVisualSettings || savedVisualSettings;
+
+  useLayoutEffect(() => {
+    if (!selectedFavorite) return;
+    const root = document.documentElement;
+    const previousScrollBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    root.style.scrollBehavior = previousScrollBehavior;
+  }, [selectedFavorite?.slug]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -1095,6 +1700,7 @@ function App() {
     const syncRoute = () => {
       setProjectRouteTransition(null);
       setProjectSlug(new URLSearchParams(window.location.search).get("project"));
+      setFavoriteSlug(new URLSearchParams(window.location.search).get("favorite"));
     };
 
     window.addEventListener("popstate", syncRoute);
@@ -1107,6 +1713,21 @@ function App() {
     const projectIndex = projects.findIndex((project) => project.slug === transition.slug);
     setReturnProjectIndex(Math.max(0, projectIndex));
     setProjectRouteTransition(transition);
+  };
+
+  const openFavorite = (favorite) => {
+    if (!favorite?.slug) return;
+
+    const favoriteIndex = favoriteGameModules.findIndex((item) => item.slug === favorite.slug);
+    setReturnFavoriteIndex(Math.max(0, favoriteIndex));
+    window.history.pushState(null, "", `/?favorite=${encodeURIComponent(favorite.slug)}`);
+    setFavoriteSlug(favorite.slug);
+  };
+
+  const returnToFavorites = (event) => {
+    event?.preventDefault();
+    window.history.replaceState(null, "", "/#strengths");
+    setFavoriteSlug(null);
   };
 
   const returnToProjects = (event) => {
@@ -1153,8 +1774,10 @@ function App() {
     <>
       <PortfolioApp
         initialProjectIndex={returnProjectIndex}
-        isActive={!selectedProject}
+        initialFavoriteIndex={returnFavoriteIndex}
+        isActive={!selectedProject && !selectedFavorite}
         onOpenProject={openProject}
+        onOpenFavorite={openFavorite}
         routeTransitionActive={Boolean(projectRouteTransition)}
         visualSettings={visualSettings}
         editorOpen={editorOpen}
@@ -1167,6 +1790,7 @@ function App() {
           visualSettings={visualSettings}
         />
       )}
+      {selectedFavorite && <FavoriteDetail favorite={selectedFavorite} onBack={returnToFavorites} />}
       {projectRouteTransition && (
         <ProjectRouteTransition
           transition={projectRouteTransition}

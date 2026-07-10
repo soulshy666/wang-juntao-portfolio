@@ -235,7 +235,7 @@ export default function FaultyTerminal({
   tint = "#ffffff",
   mouseReact = true,
   mouseStrength = 0.2,
-  dpr = Math.min(window.devicePixelRatio || 1, 2),
+  dpr = Math.min(window.devicePixelRatio || 1, 1.25),
   pageLoadAnimation = true,
   brightness = 1,
   className = "",
@@ -249,6 +249,9 @@ export default function FaultyTerminal({
   const rafRef = useRef(0);
   const loadAnimationStartRef = useRef(0);
   const timeOffsetRef = useRef(Math.random() * 100);
+  const isVisibleRef = useRef(true);
+  const isDocumentVisibleRef = useRef(typeof document === "undefined" || document.visibilityState !== "hidden");
+  const lastRenderTimeRef = useRef(0);
 
   const tintVec = useMemo(() => hexToRgb(tint), [tint]);
   const ditherValue = useMemo(() => (typeof dither === "boolean" ? (dither ? 1 : 0) : dither), [dither]);
@@ -317,8 +320,25 @@ export default function FaultyTerminal({
     resizeObserver.observe(container);
     resize();
 
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisibleRef.current = entry.isIntersecting;
+      },
+      { rootMargin: "160px 0px", threshold: 0.01 },
+    );
+    visibilityObserver.observe(container);
+
+    const handleVisibilityChange = () => {
+      isDocumentVisibleRef.current = document.visibilityState !== "hidden";
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     const update = (time) => {
       rafRef.current = requestAnimationFrame(update);
+
+      if (!isVisibleRef.current || !isDocumentVisibleRef.current || window.__portfolioPageScrolling) return;
+      if (time - lastRenderTimeRef.current < 1000 / 45) return;
+      lastRenderTimeRef.current = time;
 
       if (pageLoadAnimation && loadAnimationStartRef.current === 0) {
         loadAnimationStartRef.current = time;
@@ -355,19 +375,20 @@ export default function FaultyTerminal({
     container.appendChild(gl.canvas);
     if (mouseReact) {
       window.addEventListener("pointermove", handleMouseMove);
-      window.addEventListener("mousemove", handleMouseMove);
     }
 
     return () => {
       cancelAnimationFrame(rafRef.current);
       resizeObserver.disconnect();
+      visibilityObserver.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (mouseReact) {
         window.removeEventListener("pointermove", handleMouseMove);
-        window.removeEventListener("mousemove", handleMouseMove);
       }
       if (gl.canvas.parentElement === container) container.removeChild(gl.canvas);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
       loadAnimationStartRef.current = 0;
+      lastRenderTimeRef.current = 0;
       timeOffsetRef.current = Math.random() * 100;
     };
   }, [

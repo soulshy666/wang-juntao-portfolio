@@ -1,8 +1,7 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import Balatro from "../Balatro/Balatro";
 import SplitText from "../SplitText/SplitText";
-import UnityGameEmbed from "../UnityGameEmbed/UnityGameEmbed";
-import ProjectFolders from "../ProjectFolders/ProjectFolders";
+import ProjectPaperStack from "../ProjectPaperStack/ProjectPaperStack";
 import "./ProjectDetail.css";
 
 export default function ProjectDetail({ project, onBack, animateText = true, visualSettings }) {
@@ -52,6 +51,16 @@ export default function ProjectDetail({ project, onBack, animateText = true, vis
           <SplitText text={project.meta} className="projectDetailMeta" tag="p" splitType="words" delay={44} duration={0.82} startDelay={0.22} play={animateText} from={{ opacity: 0, y: 52 }} />
           <SplitText text={project.desc} className="projectDetailDescription" tag="p" splitType="words" delay={splitSettings.bodyDelay} duration={splitSettings.bodyDuration} startDelay={0.36} play={animateText} from={{ opacity: 0, y: splitSettings.bodyOffsetY }} />
 
+          <section className="projectContributionBlock projectDetailRevealBlock">
+            <p>MY ROLE</p>
+            <h2>我在这个项目中做了什么</h2>
+            <ul>
+              {(project.contributions || []).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </section>
+
           <dl className="projectDetailFacts projectDetailRevealBlock">
             <div>
               <dt>项目时间</dt>
@@ -77,8 +86,7 @@ export default function ProjectDetail({ project, onBack, animateText = true, vis
         </div>
 
         <div className="projectDetailRight">
-          {!isBalatro && <ProjectFolders project={project} settings={visualSettings.folder} />}
-          {isBalatro && <UnityGameEmbed autoStart active={animateText} compact />}
+          <ProjectPaperStack project={project} />
         </div>
       </section>
     </main>
