@@ -1,10 +1,12 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import Balatro from "../Balatro/Balatro";
 import SplitText from "../SplitText/SplitText";
 import ProjectPaperStack from "../ProjectPaperStack/ProjectPaperStack";
 import "./ProjectDetail.css";
 
 export default function ProjectDetail({ project, onBack, animateText = true, visualSettings }) {
+  const [entryReady, setEntryReady] = useState(false);
   const hasExternalLink = project.link?.startsWith("http");
   const isBalatro = project.slug === "balatro-shader";
   const splitSettings = visualSettings.splitText;
@@ -25,8 +27,20 @@ export default function ProjectDetail({ project, onBack, animateText = true, vis
     mouseInteraction: balatroSettings.mouseInteraction,
   };
 
+  useEffect(() => {
+    setEntryReady(false);
+
+    if (!animateText) return undefined;
+
+    const frame = requestAnimationFrame(() => {
+      setEntryReady(true);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [project.slug, animateText]);
+
   return (
-    <main className={`projectDetailPage${isBalatro ? " isBalatroDetail" : ""}${animateText ? " isTextReady" : ""}`}>
+    <main className={`projectDetailPage${isBalatro ? " isBalatroDetail" : ""}${animateText ? " isTextReady" : ""}${animateText && !entryReady ? " isEntryPreparing" : ""}${entryReady ? " isEntryActive" : ""}`}>
       <div className="projectDetailScene" aria-hidden="true">
         {isBalatro ? (
           <Balatro {...balatroProps} />

@@ -43,13 +43,13 @@ function getProjectPapers(project) {
     });
   }
 
-  if (project.slug === "beast-incarnation") {
+  if (project.featuredBadge) {
     papers.push({
       id: "awards",
       label: "获得奖项",
       kicker: "AWARDS",
       icon: Award,
-      text: "记录项目参与赛事、评审结果和阶段性成果。",
+      text: project.featuredBadge,
     });
   }
 
@@ -72,24 +72,29 @@ export default function ProjectPaperStack({ project }) {
   const [activeId, setActiveId] = useState(papers[0].id);
   const [loadedVideos, setLoadedVideos] = useState({});
   const [expandedVideo, setExpandedVideo] = useState(null);
+  const [expandedImage, setExpandedImage] = useState(null);
   const activeIndex = Math.max(0, papers.findIndex((paper) => paper.id === activeId));
 
   useEffect(() => {
     setActiveId(papers[0].id);
     setLoadedVideos({});
     setExpandedVideo(null);
+    setExpandedImage(null);
   }, [project.slug]);
 
   useEffect(() => {
-    if (!expandedVideo) return undefined;
+    if (!expandedVideo && !expandedImage) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") setExpandedVideo(null);
+      if (event.key === "Escape") {
+        setExpandedVideo(null);
+        setExpandedImage(null);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [expandedVideo]);
+  }, [expandedVideo, expandedImage]);
 
   return (
     <aside className={`projectPaperArchive${project.slug === "balatro-shader" ? " isBalatroArchive" : ""}`} aria-label="项目资料档案">
@@ -103,7 +108,9 @@ export default function ProjectPaperStack({ project }) {
           const isActive = paper.id === activeId;
           const isDemoPaper = paper.id === "demo";
           const isPlayablePaper = paper.id === "playable";
-          const isFeedbackImagePaper = paper.id === "feedback" && Boolean(project.feedbackImage);
+          const feedbackGallery = Array.isArray(project.feedbackGallery) ? project.feedbackGallery : [];
+          const isFeedbackImagePaper = paper.id === "feedback" && Boolean(project.feedbackImage || feedbackGallery.length);
+          const paperExternalLink = paper.id === "notes" ? project.breakdownLink : null;
           const demoVideo = isDemoPaper ? project.demoVideo : null;
           const demoVideoKey = `${project.slug}:${paper.id}`;
           const isVideoLoaded = Boolean(demoVideo && loadedVideos[demoVideoKey]);
@@ -134,9 +141,9 @@ export default function ProjectPaperStack({ project }) {
             <article
               role="button"
               tabIndex={0}
-              className={`projectPaper${isActive ? " isActive" : ""}${isDemoPaper ? " projectPaper--media" : ""}${isPlayablePaper ? " projectPaper--playable" : ""}${isFeedbackImagePaper ? " projectPaper--feedbackImage" : ""}`}
+              className={`projectPaper${isActive ? " isActive" : ""}${isDemoPaper ? " projectPaper--media" : ""}${isPlayablePaper ? " projectPaper--playable" : ""}${isFeedbackImagePaper ? " projectPaper--feedbackImage" : ""}${feedbackGallery.length ? " projectPaper--feedbackGallery" : ""}`}
               style={{ "--paper-offset": offset, "--paper-index": index }}
-              key={paper.id}
+              key={`${project.slug}:${paper.id}`}
               onClick={selectPaper}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
@@ -161,9 +168,35 @@ export default function ProjectPaperStack({ project }) {
                     <h3>{project.feedbackMetric || paper.label}</h3>
                   </div>
                   <p className="projectPaperFeedbackText">{project.feedbackText || paper.text}</p>
-                  <div className="projectPaperFeedbackFrame">
-                    <img src={project.feedbackImage} alt={`${project.title} 玩家反馈截图`} loading="lazy" />
-                  </div>
+                  {feedbackGallery.length ? (
+                    <div className="projectPaperFeedbackGallery">
+                      {feedbackGallery.map((image, galleryIndex) => (
+                        <figure className={galleryIndex === 0 ? "isLarge" : ""} key={image}>
+                          <button
+                            type="button"
+                            className="projectPaperGalleryButton"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setExpandedImage({
+                                src: image,
+                                title: `${project.title} 现场反馈 ${galleryIndex + 1}`,
+                              });
+                            }}
+                          >
+                            <img src={image} alt={`${project.title} 现场反馈 ${galleryIndex + 1}`} loading="lazy" />
+                            <span>
+                              <Maximize2 size={14} aria-hidden="true" />
+                              查看大图
+                            </span>
+                          </button>
+                        </figure>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="projectPaperFeedbackFrame">
+                      <img src={project.feedbackImage} alt={`${project.title} 玩家反馈截图`} loading="lazy" />
+                    </div>
+                  )}
                 </>
               ) : demoVideo && isActive ? (
                 <>
@@ -200,6 +233,17 @@ export default function ProjectPaperStack({ project }) {
                   <Icon size={30} strokeWidth={1.8} aria-hidden="true" />
                   <h3>{paper.label}</h3>
                   <p>{paper.text}</p>
+                  {paperExternalLink && (
+                    <a
+                      className="projectPaperExternalLink"
+                      href={paperExternalLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      打开飞书拆解文档
+                    </a>
+                  )}
                 </>
               )}
               <small>{demoVideo && isActive && !isVideoLoaded ? "点击播放后才会加载视频" : isPlayablePaper ? "WebGL 会在进入后自动加载" : "点击抽取这份档案"}</small>
@@ -231,6 +275,19 @@ export default function ProjectPaperStack({ project }) {
             <video className="projectVideoLightboxPlayer" controls autoPlay playsInline preload="metadata" poster={expandedVideo.poster || undefined}>
               <source src={expandedVideo.src} type="video/mp4" />
             </video>
+          </div>
+        </div>
+      )}
+      {expandedImage && (
+        <div className="projectImageLightbox" role="dialog" aria-modal="true" aria-label={expandedImage.title} onClick={() => setExpandedImage(null)}>
+          <div className="projectImageLightboxPanel" onClick={(event) => event.stopPropagation()}>
+            <div className="projectVideoLightboxTop">
+              <span>{expandedImage.title}</span>
+              <button type="button" onClick={() => setExpandedImage(null)} aria-label="关闭图片预览">
+                <X size={20} aria-hidden="true" />
+              </button>
+            </div>
+            <img className="projectImageLightboxPicture" src={expandedImage.src} alt={expandedImage.title} />
           </div>
         </div>
       )}

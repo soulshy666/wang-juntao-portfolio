@@ -55,6 +55,95 @@
   border-bottom: 1px solid rgba(248, 245, 255, 0.14);
 }
 
+.projectDetailPage.isEntryPreparing .projectDetailHeader,
+.projectDetailPage.isEntryPreparing .projectDetailCopy,
+.projectDetailPage.isEntryPreparing .projectDetailRight {
+  opacity: 0;
+}
+
+.projectDetailPage.isEntryActive .projectDetailScene {
+  animation: projectDetailSceneIn 940ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.projectDetailPage.isEntryActive .projectDetailHeader {
+  animation: projectDetailHeaderIn 560ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+
+.projectDetailPage.isEntryActive .projectDetailCopy {
+  animation: projectDetailCopyIn 720ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+}
+
+.projectDetailPage.isEntryActive .projectDetailRight {
+  animation: projectDetailFilesIn 860ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both;
+}
+
+@keyframes projectDetailSceneIn {
+  from {
+    filter: brightness(0.74) saturate(0.9);
+    transform: scale(1.045);
+  }
+
+  to {
+    filter: brightness(1) saturate(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes projectDetailHeaderIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -18px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes projectDetailCopyIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-46px, 26px, 0);
+    filter: blur(8px);
+  }
+
+  58% {
+    opacity: 1;
+    transform: translate3d(4px, -2px, 0);
+    filter: blur(1px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+@keyframes projectDetailFilesIn {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 0 24%);
+    transform: translate3d(136px, 42px, 0) rotate(2deg) scale(0.94);
+    filter: blur(10px) brightness(0.78);
+  }
+
+  62% {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: translate3d(-8px, -4px, 0) rotate(-0.6deg) scale(1.01);
+    filter: blur(1px) brightness(1);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    filter: blur(0) brightness(1);
+  }
+}
+
 .projectDetailHeader > span {
   color: rgba(248, 245, 255, 0.5);
   font-size: 12px;
@@ -323,6 +412,19 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .projectDetailPage.isEntryPreparing .projectDetailHeader,
+  .projectDetailPage.isEntryPreparing .projectDetailCopy,
+  .projectDetailPage.isEntryPreparing .projectDetailRight {
+    opacity: 1;
+  }
+
+  .projectDetailPage.isEntryActive .projectDetailScene,
+  .projectDetailPage.isEntryActive .projectDetailHeader,
+  .projectDetailPage.isEntryActive .projectDetailCopy,
+  .projectDetailPage.isEntryActive .projectDetailRight {
+    animation: none;
+  }
+
   .projectDetailAction,
   .projectDetailRevealBlock {
     transition-duration: 0.01ms;
