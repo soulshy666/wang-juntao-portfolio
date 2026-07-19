@@ -970,6 +970,7 @@ function PortfolioApp({
   );
   const [activeFavoriteIndex, setActiveFavoriteIndex] = useState(0);
   const [activeNavIndex, setActiveNavIndex] = useState(0);
+  const [activityEntryKey, setActivityEntryKey] = useState(0);
   const transitionRef = useRef(null);
   const transitionProgressRef = useRef(0);
   const transitionAnimatingRef = useRef(false);
@@ -1148,9 +1149,13 @@ function PortfolioApp({
     };
 
     const triggerPage = (targetPage) => {
+      const previousPage = activePageRef.current;
       transitionAnimatingRef.current = true;
       activePageRef.current = targetPage;
       setActiveNavIndex(getNavIndexForPage(targetPage));
+      if (targetPage === ACTIVITIES_PAGE && previousPage !== ACTIVITIES_PAGE) {
+        setActivityEntryKey((key) => key + 1);
+      }
 
       if (targetPage >= FIRST_PROJECT_PAGE && targetPage <= LAST_PROJECT_PAGE) {
         setActiveProjectIndex(targetPage - FIRST_PROJECT_PAGE);
@@ -1497,7 +1502,7 @@ function PortfolioApp({
 
       <section ref={activitiesRef} className="activitySection pageSection" id="activities">
         <Suspense fallback={<div className="activityLoading">Loading lanyard...</div>}>
-          <ActivityLanyardBoard items={activityExperiences} />
+          <ActivityLanyardBoard items={activityExperiences} resetKey={activityEntryKey} />
         </Suspense>
       </section>
 

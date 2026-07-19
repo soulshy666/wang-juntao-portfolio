@@ -30,9 +30,10 @@ const lanyardCards = [
   },
 ];
 
-export default function ActivityLanyardBoard({ items }) {
+export default function ActivityLanyardBoard({ items, resetKey = 0 }) {
   const [revealed, setRevealed] = useState(false);
   const [retracting, setRetracting] = useState(false);
+  const [lanyardInstanceKey, setLanyardInstanceKey] = useState(0);
   const timersRef = useRef([]);
 
   const queueTimer = (callback, delay) => {
@@ -47,6 +48,14 @@ export default function ActivityLanyardBoard({ items }) {
       timersRef.current = [];
     };
   }, []);
+
+  useEffect(() => {
+    timersRef.current.forEach((timer) => window.clearTimeout(timer));
+    timersRef.current = [];
+    setRevealed(false);
+    setRetracting(false);
+    setLanyardInstanceKey((key) => key + 1);
+  }, [resetKey]);
 
   const revealActivities = () => {
     if (revealed || retracting) return;
@@ -70,7 +79,7 @@ export default function ActivityLanyardBoard({ items }) {
 
       {!revealed ? (
         <div className="activityOfficialLanyard">
-          <LanyardCluster cards={lanyardCards} onRelease={revealActivities} retracting={retracting} />
+          <LanyardCluster key={lanyardInstanceKey} cards={lanyardCards} onRelease={revealActivities} retracting={retracting} />
           <div className="activityLanyardHint">拖动水牌，松手后打开活动页</div>
         </div>
       ) : (
