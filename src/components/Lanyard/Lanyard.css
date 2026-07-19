@@ -6,7 +6,16 @@
   transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms ease;
 }
 
-.lanyard-wrapper.isRetracting {
+.lanyard-cluster-wrapper {
+  position: relative;
+  width: min(1480px, calc(100vw - 32px));
+  height: min(680px, calc(100vh - 120px));
+  min-height: 560px;
+  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms ease;
+}
+
+.lanyard-wrapper.isRetracting,
+.lanyard-cluster-wrapper.isRetracting {
   opacity: 0;
   transform: translateY(-64vh) scale(0.88);
 }

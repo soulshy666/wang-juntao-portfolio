@@ -1897,6 +1897,73 @@ body {
   font-weight: 800;
 }
 
+.projectToFavoritesButton {
+  position: absolute;
+  right: clamp(34px, 5.5vw, 92px);
+  bottom: clamp(32px, 5vh, 58px);
+  z-index: 35;
+  display: inline-flex;
+  min-height: 52px;
+  padding: 0 16px 0 18px;
+  align-items: center;
+  gap: 12px;
+  color: #f8f5ff;
+  background: rgba(14, 8, 20, 0.86);
+  border: 2px solid rgba(216, 180, 254, 0.72);
+  box-shadow:
+    4px 4px 0 rgba(124, 58, 237, 0.48),
+    inset 0 0 0 1px rgba(248, 245, 255, 0.08);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition: transform 180ms ease, color 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.projectToFavoritesButton::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px dashed rgba(216, 180, 254, 0.32);
+  pointer-events: none;
+}
+
+.projectToFavoritesButton span,
+.projectToFavoritesButton svg {
+  position: relative;
+  z-index: 1;
+}
+
+.projectToFavoritesButton svg {
+  color: #d8b4fe;
+  transform: rotate(135deg);
+  animation: projectFavoriteArrow 1.15s ease-in-out infinite;
+}
+
+.projectToFavoritesButton:hover,
+.projectToFavoritesButton:focus-visible {
+  color: #160b20;
+  background: #f8f5ff;
+  border-color: #f8f5ff;
+  transform: translate(-2px, -2px);
+}
+
+.projectToFavoritesButton:hover svg,
+.projectToFavoritesButton:focus-visible svg {
+  color: #7c3aed;
+}
+
+@keyframes projectFavoriteArrow {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 5px;
+  }
+}
+
 @media (max-width: 1280px) {
   .projectFanSticky {
     padding-top: 82px;
@@ -1910,6 +1977,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .projectFanSection {
     scroll-behavior: auto;
+  }
+
+  .projectToFavoritesButton svg {
+    animation: none;
   }
 }
 

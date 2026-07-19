@@ -73,7 +73,8 @@
 }
 
 .projectPaper--media,
-.projectPaper--feedbackImage {
+.projectPaper--feedbackImage,
+.projectPaper--awards {
   width: calc(100% - 32px);
   height: 560px;
   padding: 28px 30px 24px;
@@ -88,6 +89,7 @@
 
 .projectPaper--media:not(.isActive),
 .projectPaper--feedbackImage:not(.isActive),
+.projectPaper--awards:not(.isActive),
 .projectPaper--playable:not(.isActive) {
   width: calc(100% - 72px);
   height: 320px;
@@ -337,6 +339,18 @@
   grid-row: span 2;
 }
 
+.projectPaperFeedbackGallery--count6 {
+  max-height: 390px;
+  grid-auto-rows: minmax(132px, 1fr);
+}
+
+.projectPaperFeedbackGallery--count6 figure,
+.projectPaperFeedbackGallery--count6 figure.isLarge {
+  min-height: 132px;
+  grid-column: auto;
+  grid-row: auto;
+}
+
 .projectPaperFeedbackGallery img {
   display: block;
   width: 100%;
@@ -399,6 +413,50 @@
   color: #5b5263;
   font-size: 15px;
   line-height: 1.6;
+}
+
+.projectPaperAwardList {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(680px, 100%);
+  margin-top: 26px;
+  gap: 16px;
+}
+
+.projectPaperAwardItem {
+  display: grid;
+  min-height: 86px;
+  padding: 16px 18px 16px 16px;
+  align-items: center;
+  grid-template-columns: 62px 1fr;
+  gap: 18px;
+  color: #18131e;
+  background:
+    linear-gradient(90deg, rgba(216, 180, 254, 0.34), rgba(248, 245, 255, 0.72)),
+    #f8f5ff;
+  border: 2px solid #7c3aed;
+  box-shadow: 4px 4px 0 rgba(24, 19, 30, 0.22);
+}
+
+.projectPaperAwardItem span {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  color: #f8f5ff;
+  background: #7c3aed;
+  border: 2px solid #18131e;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.projectPaperAwardItem strong {
+  color: #18131e;
+  font-size: clamp(24px, 2.2vw, 34px);
+  line-height: 1.16;
+  letter-spacing: 0;
+  text-wrap: balance;
 }
 
 .projectPaperExternalLink {

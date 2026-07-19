@@ -11,7 +11,12 @@ import "./Lanyard.css";
 
 extend({ MeshLineGeometry, MeshLineMaterial });
 
-export default function Lanyard({ onRelease, retracting = false }) {
+export default function Lanyard({
+  onRelease,
+  retracting = false,
+  frontTextureUrl = "/assets/activities/solo-lanyard-card-web.png",
+  backTextureUrl = "/assets/activities/solo-lanyard-card-back-web.png",
+}) {
   return (
     <div className={`lanyard-wrapper${retracting ? " isRetracting" : ""}`}>
       <Canvas
@@ -25,7 +30,7 @@ export default function Lanyard({ onRelease, retracting = false }) {
         <pointLight position={[-4, -2, 8]} intensity={18} color="#c084fc" />
         <Suspense fallback={null}>
           <Physics gravity={[0, -40, 0]} timeStep={1 / 60}>
-            <Band onRelease={onRelease} />
+            <Band onRelease={onRelease} frontTextureUrl={frontTextureUrl} backTextureUrl={backTextureUrl} />
           </Physics>
         </Suspense>
       </Canvas>
@@ -33,7 +38,40 @@ export default function Lanyard({ onRelease, retracting = false }) {
   );
 }
 
-function Band({ maxSpeed = 50, minSpeed = 0, onRelease }) {
+export function LanyardCluster({ cards, onRelease, retracting = false }) {
+  return (
+    <div className={`lanyard-cluster-wrapper${retracting ? " isRetracting" : ""}`}>
+      <Canvas
+        camera={{ position: [0, 0, 34], fov: 20 }}
+        dpr={[1, 1.5]}
+        gl={{ alpha: true, antialias: true }}
+        onCreated={({ gl }) => gl.setClearColor(new THREE.Color(0x000000), 0)}
+      >
+        <ambientLight intensity={Math.PI * 0.85} />
+        <directionalLight position={[3, 5, 6]} intensity={3.2} />
+        <pointLight position={[-4, -2, 8]} intensity={18} color="#c084fc" />
+        <Suspense fallback={null}>
+          <Physics gravity={[0, -40, 0]} timeStep={1 / 60}>
+            {cards.map((card, index) => (
+              <Band
+                key={card.title}
+                onRelease={onRelease}
+                frontTextureUrl={card.frontTextureUrl}
+                backTextureUrl={card.backTextureUrl}
+                originX={(index - (cards.length - 1) / 2) * 3.35}
+                originY={index % 2 === 0 ? 0 : 0.55}
+                initialTilt={index % 2 === 0 ? -0.04 : 0.05}
+                scale={1.15}
+              />
+            ))}
+          </Physics>
+        </Suspense>
+      </Canvas>
+    </div>
+  );
+}
+
+function Band({ maxSpeed = 50, minSpeed = 0, onRelease, frontTextureUrl, backTextureUrl, originX = 0, originY = 0, initialTilt = 0, scale = 2.25 }) {
   const band = useRef();
   const fixed = useRef();
   const j1 = useRef();
@@ -47,6 +85,7 @@ function Band({ maxSpeed = 50, minSpeed = 0, onRelease }) {
   const segmentProps = { type: "dynamic", canSleep: true, colliders: false, angularDamping: 4, linearDamping: 4 };
   const { nodes, materials } = useLoader(GLTFLoader, cardGLB);
   const texture = useLoader(THREE.TextureLoader, lanyardTexture);
+  const [frontTexture, backTexture] = useLoader(THREE.TextureLoader, [frontTextureUrl, backTextureUrl]);
   const [curve] = useState(
     () => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]),
   );
@@ -94,6 +133,10 @@ function Band({ maxSpeed = 50, minSpeed = 0, onRelease }) {
 
   curve.curveType = "chordal";
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  [frontTexture, backTexture].forEach((cardTexture) => {
+    cardTexture.colorSpace = THREE.SRGBColorSpace;
+    cardTexture.anisotropy = 16;
+  });
 
   const releaseCard = (event) => {
     event.target.releasePointerCapture(event.pointerId);
@@ -103,7 +146,7 @@ function Band({ maxSpeed = 50, minSpeed = 0, onRelease }) {
 
   return (
     <>
-      <group position={[0, 4, 0]}>
+      <group position={[originX, 4 + originY, 0]}>
         <RigidBody ref={fixed} {...segmentProps} type="fixed" />
         <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
           <BallCollider args={[0.1]} />
@@ -117,7 +160,8 @@ function Band({ maxSpeed = 50, minSpeed = 0, onRelease }) {
         <RigidBody position={[2, 0, 0]} ref={card} {...segmentProps} type={dragged ? "kinematicPosition" : "dynamic"}>
           <CuboidCollider args={[0.8, 1.125, 0.01]} />
           <group
-            scale={2.25}
+            scale={scale}
+            rotation={[0, 0, initialTilt]}
             position={[0, -1.2, -0.05]}
             onPointerOver={() => hover(true)}
             onPointerOut={() => hover(false)}
@@ -129,13 +173,20 @@ function Band({ maxSpeed = 50, minSpeed = 0, onRelease }) {
           >
             <mesh geometry={nodes.card.geometry}>
               <meshPhysicalMaterial
-                map={materials.base.map}
-                map-anisotropy={16}
+                color="#f8f5ff"
                 clearcoat={1}
                 clearcoatRoughness={0.15}
                 roughness={0.9}
                 metalness={0.8}
               />
+            </mesh>
+            <mesh position={[0, 0, 0.018]}>
+              <planeGeometry args={[1.58, 2.22]} />
+              <meshBasicMaterial map={frontTexture} transparent side={THREE.FrontSide} toneMapped={false} />
+            </mesh>
+            <mesh position={[0, 0, -0.018]} rotation={[0, Math.PI, 0]}>
+              <planeGeometry args={[1.58, 2.22]} />
+              <meshBasicMaterial map={backTexture} transparent side={THREE.FrontSide} toneMapped={false} />
             </mesh>
             <mesh geometry={nodes.clip.geometry} material={materials.metal} material-roughness={0.3} />
             <mesh geometry={nodes.clamp.geometry} material={materials.metal} />

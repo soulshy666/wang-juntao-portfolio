@@ -1,6 +1,34 @@
 import { useEffect, useRef, useState } from "react";
-import Lanyard from "../Lanyard/Lanyard";
+import { LanyardCluster } from "../Lanyard/Lanyard";
 import "./ActivityLanyardBoard.css";
+
+const lanyardCards = [
+  {
+    title: "全能 Solo",
+    frontTextureUrl: "/assets/activities/solo-lanyard-card-web.png",
+    backTextureUrl: "/assets/activities/solo-lanyard-card-back-web.png",
+  },
+  {
+    title: "策划",
+    frontTextureUrl: "/assets/activities/lanyard-planner-web.png",
+    backTextureUrl: "/assets/activities/solo-lanyard-card-back-web.png",
+  },
+  {
+    title: "创作者",
+    frontTextureUrl: "/assets/activities/lanyard-creator-web.png",
+    backTextureUrl: "/assets/activities/solo-lanyard-card-back-web.png",
+  },
+  {
+    title: "开发者",
+    frontTextureUrl: "/assets/activities/lanyard-developer-web.png",
+    backTextureUrl: "/assets/activities/solo-lanyard-card-back-web.png",
+  },
+  {
+    title: "参展同学",
+    frontTextureUrl: "/assets/activities/lanyard-exhibitor-web.png",
+    backTextureUrl: "/assets/activities/solo-lanyard-card-back-web.png",
+  },
+];
 
 export default function ActivityLanyardBoard({ items }) {
   const [revealed, setRevealed] = useState(false);
@@ -42,7 +70,7 @@ export default function ActivityLanyardBoard({ items }) {
 
       {!revealed ? (
         <div className="activityOfficialLanyard">
-          <Lanyard onRelease={revealActivities} retracting={retracting} />
+          <LanyardCluster cards={lanyardCards} onRelease={revealActivities} retracting={retracting} />
           <div className="activityLanyardHint">拖动水牌，松手后打开活动页</div>
         </div>
       ) : (

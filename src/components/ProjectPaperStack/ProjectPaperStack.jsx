@@ -4,6 +4,8 @@ import UnityGameEmbed from "../UnityGameEmbed/UnityGameEmbed";
 import "./ProjectPaperStack.css";
 
 function getProjectPapers(project) {
+  const featuredAwards = project.featuredAwards || (project.featuredBadge ? [project.featuredBadge] : []);
+
   if (project.slug === "balatro-shader") {
     return [
       {
@@ -23,15 +25,28 @@ function getProjectPapers(project) {
     ];
   }
 
-  const papers = [
-    {
-      id: "demo",
-      label: "游戏实机演示视频",
-      kicker: "GAMEPLAY VIDEO",
-      icon: Play,
-      text: "查看项目的核心玩法、操作流程和当前可玩版本表现。",
-    },
-  ];
+  const shouldShowDemoPaper = Boolean(project.demoVideo || project.pendingDemoVideo);
+  const papers = shouldShowDemoPaper
+    ? [
+        {
+          id: "demo",
+          label: "游戏实机演示视频",
+          kicker: "GAMEPLAY VIDEO",
+          icon: Play,
+          text: project.pendingDemoVideo && !project.demoVideo
+            ? "实机演示视频位置已预留，后续会替换为项目的真实试玩视频。"
+            : "查看项目的核心玩法、操作流程和当前可玩版本表现。",
+        },
+      ]
+    : [
+        {
+          id: "release",
+          label: "发布成果",
+          kicker: "RELEASE RESULT",
+          icon: Award,
+          text: project.feedbackText || project.desc,
+        },
+      ];
 
   if (project.tag !== "RECREATION") {
     papers.push({
@@ -39,17 +54,18 @@ function getProjectPapers(project) {
       label: "玩家体验与反馈",
       kicker: "PLAYER FEEDBACK",
       icon: MessageSquareText,
-      text: "整理试玩中出现的关键问题、玩家感受和后续迭代方向。",
+      text: project.feedbackText || "整理试玩中出现的关键问题、玩家感受和后续迭代方向。",
     });
   }
 
-  if (project.featuredBadge) {
+  if (featuredAwards.length && !project.hideAwardPaper) {
     papers.push({
       id: "awards",
       label: "获得奖项",
       kicker: "AWARDS",
       icon: Award,
       text: project.featuredBadge,
+      awards: featuredAwards,
     });
   }
 
@@ -141,7 +157,7 @@ export default function ProjectPaperStack({ project }) {
             <article
               role="button"
               tabIndex={0}
-              className={`projectPaper${isActive ? " isActive" : ""}${isDemoPaper ? " projectPaper--media" : ""}${isPlayablePaper ? " projectPaper--playable" : ""}${isFeedbackImagePaper ? " projectPaper--feedbackImage" : ""}${feedbackGallery.length ? " projectPaper--feedbackGallery" : ""}`}
+              className={`projectPaper${isActive ? " isActive" : ""}${isDemoPaper ? " projectPaper--media" : ""}${isPlayablePaper ? " projectPaper--playable" : ""}${isFeedbackImagePaper ? " projectPaper--feedbackImage" : ""}${paper.id === "awards" ? " projectPaper--awards" : ""}${feedbackGallery.length ? " projectPaper--feedbackGallery" : ""}`}
               style={{ "--paper-offset": offset, "--paper-index": index }}
               key={`${project.slug}:${paper.id}`}
               onClick={selectPaper}
@@ -169,7 +185,7 @@ export default function ProjectPaperStack({ project }) {
                   </div>
                   <p className="projectPaperFeedbackText">{project.feedbackText || paper.text}</p>
                   {feedbackGallery.length ? (
-                    <div className="projectPaperFeedbackGallery">
+                    <div className={`projectPaperFeedbackGallery projectPaperFeedbackGallery--count${feedbackGallery.length}`}>
                       {feedbackGallery.map((image, galleryIndex) => (
                         <figure className={galleryIndex === 0 ? "isLarge" : ""} key={image}>
                           <button
@@ -232,7 +248,18 @@ export default function ProjectPaperStack({ project }) {
                 <>
                   <Icon size={30} strokeWidth={1.8} aria-hidden="true" />
                   <h3>{paper.label}</h3>
-                  <p>{paper.text}</p>
+                  {paper.id === "awards" && paper.awards?.length ? (
+                    <div className="projectPaperAwardList">
+                      {paper.awards.map((award, awardIndex) => (
+                        <div className="projectPaperAwardItem" key={award}>
+                          <span>{String(awardIndex + 1).padStart(2, "0")}</span>
+                          <strong>{award}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>{paper.text}</p>
+                  )}
                   {paperExternalLink && (
                     <a
                       className="projectPaperExternalLink"
@@ -246,7 +273,7 @@ export default function ProjectPaperStack({ project }) {
                   )}
                 </>
               )}
-              <small>{demoVideo && isActive && !isVideoLoaded ? "点击播放后才会加载视频" : isPlayablePaper ? "WebGL 会在进入后自动加载" : "点击抽取这份档案"}</small>
+              <small>{demoVideo && isActive && !isVideoLoaded ? "点击播放后才会加载视频" : isDemoPaper && !demoVideo ? "视频素材待补充" : isPlayablePaper ? "WebGL 会在进入后自动加载" : "点击抽取这份档案"}</small>
             </article>
           );
         })}

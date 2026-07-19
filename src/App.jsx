@@ -44,6 +44,7 @@ const PROJECT_ROUTE_GRID_SIZE = 12;
 const PROJECT_ROUTE_FALLBACKS = {
   "beast-incarnation": "#10162d",
   "wood-cat": "#27320f",
+  "job-hop-life": "#2c7b19",
   "endless-rush-hour": "#26292f",
   "headhunter-company": "#241810",
   "balatro-shader": "#24103d",
@@ -467,6 +468,7 @@ const projects = [
     meta: "Unity / 关卡策划 / 程序",
     period: "2026.03 - 2026.06",
     image: "/assets/project-beast.png",
+    demoVideo: "/assets/projects/beast-incarnation-demo.mp4",
     feedbackGallery: [
       "/assets/projects/beast-feedback/beast-feedback-01.jpg",
       "/assets/projects/beast-feedback/beast-feedback-02.jpg",
@@ -482,9 +484,40 @@ const projects = [
     feedbackText: "莉莉丝高校游戏创作大赛现场试玩与获奖记录，包含展位体验、玩家试玩、展示交流和奖项留影。",
     tag: "GAME JAM",
     featuredBadge: "莉莉丝全国游戏创作大赛三等奖",
+    featuredAwards: ["莉莉丝全国游戏创作大赛三等奖", "网易 MiniGame 入围决赛"],
     desc: "2D 像素风硬核精准平台跳跃游戏。围绕多形态无缝切换与底层物理法则重构，验证狼、蛙、猫、羊等动物动能规律带来的操作心流。",
     contributions: ["设计多动物形态切换与差异化动能规则", "完成关卡白盒、路线节奏与难度迭代", "参与 Unity 核心机制实现和物理参数调优"],
     link: "https://www.bilibili.com/video/BV14L5d66EHm/",
+  },
+  {
+    slug: "job-hop-life",
+    title: "跳槽人生",
+    meta: "TapTap 制造新星 Game Jam / 48H / Roguelike 策略卡牌",
+    period: "2026",
+    image: "/assets/project-job-hop-life.png",
+    demoVideo: "/assets/projects/job-hop-life-demo.mp4",
+    feedbackGallery: [
+      "/assets/projects/job-hop-life-feedback/job-hop-life-feedback-01.png",
+      "/assets/projects/job-hop-life-feedback/job-hop-life-feedback-02.png",
+      "/assets/projects/job-hop-life-feedback/job-hop-life-feedback-03.png",
+      "/assets/projects/job-hop-life-feedback/job-hop-life-feedback-04.png",
+      "/assets/projects/job-hop-life-feedback/job-hop-life-feedback-05.png",
+      "/assets/projects/job-hop-life-feedback/job-hop-life-feedback-06.png",
+    ],
+    feedbackMetric: "4天 5000+ 下载",
+    feedbackText: "TapTap 制造编辑推荐作品，48h 内完成游戏并上线，4 天内下载量突破 5000，新品榜单进入前 40。",
+    tag: "GAME JAM",
+    featuredBadge: "四天下载量5000+ / 新品榜前40 / TapTap编辑推荐",
+    hideAwardPaper: true,
+    desc: "一款 2D Roguelike 策略卡牌游戏。核心玩法是通过一次换位调整 7 张履历牌顺序，并根据岗位与颜色自动判定最佳牌型进行计分；游戏融合牌型倍率、效果牌构筑、商店成长与关卡推进，形成完整策略卡牌循环。",
+    contributions: [
+      "设计履历牌换位与牌型计分机制，提升单次操作的策略深度",
+      "搭建牌型识别、效果牌、商店、关卡推进与分数结算系统",
+      "设计基础分、倍率、关卡目标和经济节奏，优化成长体验",
+      "新增多张效果牌，丰富不同构筑路线和重复游玩价值",
+      "针对手机端调整交互布局与操作反馈，提升移动端可玩性",
+    ],
+    link: "https://www.taptap.cn/app/875196",
   },
   {
     slug: "wood-cat",
@@ -1282,6 +1315,11 @@ function PortfolioApp({
     );
   };
 
+  const goToFavorites = () => {
+    window.history.replaceState(null, "", "/#strengths");
+    selectFavorite(0);
+  };
+
   const openProjectDetails = (project, sourceElement) => {
     if (routeTransitionActive) return;
 
@@ -1437,6 +1475,15 @@ function PortfolioApp({
             onOpenProject={openProjectDetails}
             balatroSettings={balatroSettings}
           />
+          <button
+            type="button"
+            className="projectToFavoritesButton"
+            onClick={goToFavorites}
+            aria-label="点击查看我最爱的游戏"
+          >
+            <span>点击查看我最爱的游戏</span>
+            <ArrowUpRight size={22} aria-hidden="true" />
+          </button>
         </div>
       </section>
 
