@@ -239,7 +239,27 @@
   box-shadow: 3px 3px 0 rgba(24, 19, 30, 0.34);
   font-size: 13px;
   font-weight: 900;
+  cursor: pointer;
   transform: translate(-50%, -50%);
+}
+
+.projectPaperPlayPrompt:hover,
+.projectPaperPlayPrompt:focus-visible {
+  color: #f8f5ff;
+  background: #7c3aed;
+}
+
+.projectPaperVideo:fullscreen,
+.projectPaperVideo:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  object-fit: contain;
+  background: #000;
+  border: 0;
+  box-shadow: none;
 }
 
 .projectPaperPlayable {
@@ -512,29 +532,6 @@
   border-color: #d8b4fe;
 }
 
-.projectVideoLightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 180;
-  display: grid;
-  padding: clamp(22px, 4vw, 64px);
-  place-items: center;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(124, 58, 237, 0.16), transparent 34rem),
-    rgba(5, 2, 7, 0.88);
-  backdrop-filter: blur(8px);
-}
-
-.projectVideoLightboxPanel {
-  width: min(1500px, 94vw);
-  color: #f8f5ff;
-  background: #12091a;
-  border: 1px solid rgba(216, 180, 254, 0.42);
-  box-shadow:
-    9px 9px 0 rgba(76, 29, 149, 0.58),
-    0 24px 80px rgba(0, 0, 0, 0.52);
-}
-
 .projectVideoLightboxTop {
   display: flex;
   min-height: 54px;
@@ -557,15 +554,6 @@
   background: #1f1230;
   border: 1px solid rgba(216, 180, 254, 0.34);
   cursor: pointer;
-}
-
-.projectVideoLightboxPlayer {
-  display: block;
-  width: 100%;
-  max-height: calc(100vh - 170px);
-  aspect-ratio: 16 / 9;
-  object-fit: contain;
-  background: #050207;
 }
 
 .projectImageLightbox {

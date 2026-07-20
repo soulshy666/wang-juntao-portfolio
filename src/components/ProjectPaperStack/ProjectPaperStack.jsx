@@ -1,5 +1,5 @@
 import { Award, Maximize2, MessageSquareText, Play, ScrollText, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import UnityGameEmbed from "../UnityGameEmbed/UnityGameEmbed";
 import "./ProjectPaperStack.css";
 
@@ -87,30 +87,49 @@ export default function ProjectPaperStack({ project }) {
 
   const [activeId, setActiveId] = useState(papers[0].id);
   const [loadedVideos, setLoadedVideos] = useState({});
-  const [expandedVideo, setExpandedVideo] = useState(null);
   const [expandedImage, setExpandedImage] = useState(null);
+  const videoRefs = useRef(new Map());
+  const fullscreenVideoRef = useRef(null);
   const activeIndex = Math.max(0, papers.findIndex((paper) => paper.id === activeId));
 
   useEffect(() => {
     setActiveId(papers[0].id);
     setLoadedVideos({});
-    setExpandedVideo(null);
     setExpandedImage(null);
   }, [project.slug]);
 
   useEffect(() => {
-    if (!expandedVideo && !expandedImage) return undefined;
+    if (!expandedImage) return undefined;
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        setExpandedVideo(null);
         setExpandedImage(null);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [expandedVideo, expandedImage]);
+  }, [expandedImage]);
+
+  useEffect(() => {
+    const restoreInlinePreview = () => {
+      const player = fullscreenVideoRef.current;
+      if (!player || document.fullscreenElement || document.webkitFullscreenElement) return;
+
+      player.controls = false;
+      player.muted = true;
+      player.loop = true;
+      fullscreenVideoRef.current = null;
+      player.play().catch(() => {});
+    };
+
+    document.addEventListener("fullscreenchange", restoreInlinePreview);
+    document.addEventListener("webkitfullscreenchange", restoreInlinePreview);
+    return () => {
+      document.removeEventListener("fullscreenchange", restoreInlinePreview);
+      document.removeEventListener("webkitfullscreenchange", restoreInlinePreview);
+    };
+  }, []);
 
   return (
     <aside className={`projectPaperArchive${project.slug === "balatro-shader" ? " isBalatroArchive" : ""}`} aria-label="项目资料档案">
@@ -142,15 +161,36 @@ export default function ProjectPaperStack({ project }) {
             if (demoVideo && isActive) loadDemoVideo();
           };
 
-          const openExpandedVideo = (event) => {
+          const openFullscreenVideo = async (event) => {
             event.stopPropagation();
             if (!demoVideo) return;
             loadDemoVideo();
-            setExpandedVideo({
-              src: demoVideo,
-              poster: project.image,
-              title: project.title,
-            });
+
+            const player = videoRefs.current.get(demoVideoKey);
+            if (!player) return;
+
+            fullscreenVideoRef.current = player;
+            player.controls = true;
+            player.loop = false;
+            player.muted = false;
+
+            try {
+              if (player.requestFullscreen) {
+                await player.requestFullscreen();
+              } else if (player.webkitRequestFullscreen) {
+                player.webkitRequestFullscreen();
+              } else if (player.webkitEnterFullscreen) {
+                player.webkitEnterFullscreen();
+              } else {
+                throw new Error("Fullscreen video is not supported in this browser.");
+              }
+              await player.play();
+            } catch {
+              player.controls = false;
+              player.muted = true;
+              player.loop = true;
+              fullscreenVideoRef.current = null;
+            }
           };
 
           return (
@@ -220,29 +260,40 @@ export default function ProjectPaperStack({ project }) {
                     <Icon size={24} strokeWidth={1.8} aria-hidden="true" />
                     <h3>{paper.label}</h3>
                   </div>
-                  {isVideoLoaded ? (
-                    <div className="projectPaperVideoFrame">
-                      <video className="projectPaperVideo" muted loop playsInline autoPlay preload="none" poster={project.image}>
-                        <source src={demoVideo} type="video/mp4" />
-                      </video>
-                      <button type="button" className="projectPaperExpand" onClick={openExpandedVideo}>
-                        <Maximize2 size={15} aria-hidden="true" />
-                        放大观看
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="projectPaperVideoShell">
-                      <img src={project.image} alt="" loading="lazy" />
-                      <span className="projectPaperPlayPrompt">
+                  <div className="projectPaperVideoFrame">
+                    <video
+                      ref={(node) => {
+                        if (node) videoRefs.current.set(demoVideoKey, node);
+                        else videoRefs.current.delete(demoVideoKey);
+                      }}
+                      className="projectPaperVideo"
+                      muted
+                      loop
+                      playsInline
+                      autoPlay={isVideoLoaded}
+                      preload="none"
+                      poster={project.image}
+                    >
+                      <source src={demoVideo} type="video/mp4" />
+                    </video>
+                    {!isVideoLoaded && (
+                      <button
+                        type="button"
+                        className="projectPaperPlayPrompt"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          loadDemoVideo();
+                        }}
+                      >
                         <Play size={18} fill="currentColor" aria-hidden="true" />
                         点击播放
-                      </span>
-                      <button type="button" className="projectPaperExpand" onClick={openExpandedVideo}>
-                        <Maximize2 size={15} aria-hidden="true" />
-                        放大观看
                       </button>
-                    </div>
-                  )}
+                    )}
+                    <button type="button" className="projectPaperExpand" onClick={openFullscreenVideo}>
+                      <Maximize2 size={15} aria-hidden="true" />
+                      全屏观看
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
@@ -290,21 +341,6 @@ export default function ProjectPaperStack({ project }) {
           </button>
         ))}
       </div>
-      {expandedVideo && (
-        <div className="projectVideoLightbox" role="dialog" aria-modal="true" aria-label={`${expandedVideo.title} 视频预览`} onClick={() => setExpandedVideo(null)}>
-          <div className="projectVideoLightboxPanel" onClick={(event) => event.stopPropagation()}>
-            <div className="projectVideoLightboxTop">
-              <span>{expandedVideo.title}</span>
-              <button type="button" onClick={() => setExpandedVideo(null)} aria-label="关闭视频预览">
-                <X size={20} aria-hidden="true" />
-              </button>
-            </div>
-            <video className="projectVideoLightboxPlayer" controls autoPlay playsInline preload="metadata" poster={expandedVideo.poster || undefined}>
-              <source src={expandedVideo.src} type="video/mp4" />
-            </video>
-          </div>
-        </div>
-      )}
       {expandedImage && (
         <div className="projectImageLightbox" role="dialog" aria-modal="true" aria-label={expandedImage.title} onClick={() => setExpandedImage(null)}>
           <div className="projectImageLightboxPanel" onClick={(event) => event.stopPropagation()}>
