@@ -14,6 +14,13 @@ const largeAssets = [
   "/games/balatro/Build/WebGL.wasm",
 ];
 
+const generatedAssetReferences = [
+  {
+    search: 'codeUrl: buildUrl + "/WebGL.wasm"',
+    replacement: `codeUrl: "${largeAssetBase}/games/balatro/Build/WebGL.wasm"`,
+  },
+];
+
 const textExtensions = new Set([".html", ".js", ".css", ".json", ".svg", ".txt"]);
 
 function walkFiles(dir) {
@@ -55,6 +62,10 @@ if (largeAssetBase) {
       const remoteUrl = `${largeAssetBase}${asset}`;
       content = replaceAll(content, asset, remoteUrl);
       content = replaceAll(content, asset.slice(1), remoteUrl);
+    }
+
+    for (const reference of generatedAssetReferences) {
+      content = replaceAll(content, reference.search, reference.replacement);
     }
 
     if (content !== original) {
