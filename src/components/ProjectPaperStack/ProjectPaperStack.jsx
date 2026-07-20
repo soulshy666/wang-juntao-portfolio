@@ -154,11 +154,17 @@ export default function ProjectPaperStack({ project }) {
           const loadDemoVideo = () => {
             if (!demoVideo) return;
             setLoadedVideos((current) => ({ ...current, [demoVideoKey]: true }));
+
+            const player = videoRefs.current.get(demoVideoKey);
+            if (player) {
+              player.load();
+              player.play().catch(() => {});
+            }
           };
 
           const selectPaper = () => {
             setActiveId(paper.id);
-            if (demoVideo && isActive) loadDemoVideo();
+            if (demoVideo) loadDemoVideo();
           };
 
           const openFullscreenVideo = async (event) => {
@@ -335,7 +341,12 @@ export default function ProjectPaperStack({ project }) {
             type="button"
             className={paper.id === activeId ? "isActive" : ""}
             key={paper.id}
-            onClick={() => setActiveId(paper.id)}
+            onClick={() => {
+              setActiveId(paper.id);
+              if (paper.id === "demo" && project.demoVideo) {
+                setLoadedVideos((current) => ({ ...current, [`${project.slug}:demo`]: true }));
+              }
+            }}
           >
             {paper.label}
           </button>
