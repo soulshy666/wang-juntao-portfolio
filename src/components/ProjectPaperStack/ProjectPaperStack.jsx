@@ -89,7 +89,6 @@ export default function ProjectPaperStack({ project }) {
   const [loadedVideos, setLoadedVideos] = useState({});
   const [expandedImage, setExpandedImage] = useState(null);
   const videoRefs = useRef(new Map());
-  const fullscreenVideoRef = useRef(null);
   const activeIndex = Math.max(0, papers.findIndex((paper) => paper.id === activeId));
 
   useEffect(() => {
@@ -110,26 +109,6 @@ export default function ProjectPaperStack({ project }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [expandedImage]);
-
-  useEffect(() => {
-    const restoreInlinePreview = () => {
-      const player = fullscreenVideoRef.current;
-      if (!player || document.fullscreenElement || document.webkitFullscreenElement) return;
-
-      player.controls = false;
-      player.muted = true;
-      player.loop = true;
-      fullscreenVideoRef.current = null;
-      player.play().catch(() => {});
-    };
-
-    document.addEventListener("fullscreenchange", restoreInlinePreview);
-    document.addEventListener("webkitfullscreenchange", restoreInlinePreview);
-    return () => {
-      document.removeEventListener("fullscreenchange", restoreInlinePreview);
-      document.removeEventListener("webkitfullscreenchange", restoreInlinePreview);
-    };
-  }, []);
 
   return (
     <aside className={`projectPaperArchive${project.slug === "balatro-shader" ? " isBalatroArchive" : ""}`} aria-label="项目资料档案">
@@ -165,38 +144,6 @@ export default function ProjectPaperStack({ project }) {
           const selectPaper = () => {
             setActiveId(paper.id);
             if (demoVideo) loadDemoVideo();
-          };
-
-          const openFullscreenVideo = async (event) => {
-            event.stopPropagation();
-            if (!demoVideo) return;
-            loadDemoVideo();
-
-            const player = videoRefs.current.get(demoVideoKey);
-            if (!player) return;
-
-            fullscreenVideoRef.current = player;
-            player.controls = true;
-            player.loop = false;
-            player.muted = false;
-
-            try {
-              if (player.requestFullscreen) {
-                await player.requestFullscreen();
-              } else if (player.webkitRequestFullscreen) {
-                player.webkitRequestFullscreen();
-              } else if (player.webkitEnterFullscreen) {
-                player.webkitEnterFullscreen();
-              } else {
-                throw new Error("Fullscreen video is not supported in this browser.");
-              }
-              await player.play();
-            } catch {
-              player.controls = false;
-              player.muted = true;
-              player.loop = true;
-              fullscreenVideoRef.current = null;
-            }
           };
 
           return (
@@ -295,10 +242,6 @@ export default function ProjectPaperStack({ project }) {
                         点击播放
                       </button>
                     )}
-                    <button type="button" className="projectPaperExpand" onClick={openFullscreenVideo}>
-                      <Maximize2 size={15} aria-hidden="true" />
-                      全屏观看
-                    </button>
                   </div>
                 </>
               ) : (

@@ -11,6 +11,8 @@ const largeAssets = [
   "/assets/projects/ue5-jett-demo.mp4",
   "/assets/projects/job-hop-life-demo.mp4",
   "/assets/projects/balatro-shader-demo.mp4",
+  "/assets/projects/wood-cat-demo.mp4",
+  "/assets/projects/anchor-cat-demo.mp4",
   "/games/balatro/Build/WebGL.wasm",
 ];
 
@@ -61,7 +63,6 @@ if (largeAssetBase) {
     for (const asset of largeAssets) {
       const remoteUrl = `${largeAssetBase}${asset}`;
       content = replaceAll(content, asset, remoteUrl);
-      content = replaceAll(content, asset.slice(1), remoteUrl);
     }
 
     for (const reference of generatedAssetReferences) {
