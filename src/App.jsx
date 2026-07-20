@@ -487,7 +487,7 @@ const projects = [
     featuredAwards: ["莉莉丝全国游戏创作大赛三等奖", "网易 MiniGame 入围决赛"],
     desc: "2D 像素风硬核精准平台跳跃游戏。围绕多形态无缝切换与底层物理法则重构，验证狼、蛙、猫、羊等动物动能规律带来的操作心流。",
     contributions: ["设计多动物形态切换与差异化动能规则", "完成关卡白盒、路线节奏与难度迭代", "参与 Unity 核心机制实现和物理参数调优"],
-    link: "https://www.bilibili.com/video/BV14L5d66EHm/",
+    link: "https://pan.baidu.com/s/1ic6hwxzXqq-s9fBcGGkuGQ?pwd=wmmf",
   },
   {
     slug: "job-hop-life",
@@ -568,7 +568,7 @@ const projects = [
     tag: "COMPETITION",
     desc: "基于 AI Agent 工作流构建的黑色幽默模拟经营游戏。接入 Qwen 模型完成语义评分，驱动求职者探查、包装售卖与经营扩张循环。",
     contributions: ["独立完成玩法、程序与整体产品闭环", "接入 Qwen 模型并设计语义评分规则", "搭建求职者探查、包装售卖和经营扩张循环"],
-    link: "https://www.taptap.cn/moment/813589271922344237",
+    link: "https://www.taptap.cn/app/868966",
   },
   {
     slug: "balatro-shader",
@@ -623,7 +623,7 @@ const projects = [
     featuredBadge: "2026 CIGA 广州万物破元站第一名",
     desc: "2026 CIGA 广州万物破元站第一名作品。围绕主题限制完成创意发散、核心玩法验证与短周期 Demo 交付，突出轻量机制与清晰互动反馈。",
     contributions: ["参与主题拆解与核心玩法方向确定", "推进短周期 Demo 的规则验证和交互节奏打磨", "整理现场试玩反馈并优化展示版本表达"],
-    link: "#contact",
+    link: "https://www.taptap.cn/app/881272",
   },
 ];
 

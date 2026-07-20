@@ -93,7 +93,7 @@ export default function ProjectDetail({ project, onBack, animateText = true, vis
               target="_blank"
               rel="noreferrer"
             >
-              查看项目原始页面
+              游戏游玩链接
               <ArrowUpRight size={18} />
             </a>
           )}
