@@ -1,7 +1,7 @@
 {
   "name": "wang-juntao-portfolio",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "EDGEONE_LARGE_ASSET_BASE=${EDGEONE_LARGE_ASSET_BASE:-https://wang-juntao-portfolio.vercel.app} pnpm run build:edgeone",
+  "buildCommand": "EDGEONE_LARGE_ASSET_BASE=${EDGEONE_LARGE_ASSET_BASE:-https://portfolio-assets-1456010656.cos.ap-guangzhou.myqcloud.com} pnpm run build:edgeone",
   "outputDirectory": "dist",
   "nodeVersion": "22.11.0"
 }
