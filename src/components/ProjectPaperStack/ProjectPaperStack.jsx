@@ -1,5 +1,6 @@
 import { Award, Maximize2, MessageSquareText, Play, ScrollText, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import UnityGameEmbed from "../UnityGameEmbed/UnityGameEmbed";
 import "./ProjectPaperStack.css";
 
@@ -99,6 +100,8 @@ export default function ProjectPaperStack({ project }) {
 
   useEffect(() => {
     if (!expandedImage) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -107,7 +110,10 @@ export default function ProjectPaperStack({ project }) {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [expandedImage]);
 
   return (
@@ -302,7 +308,7 @@ export default function ProjectPaperStack({ project }) {
           </button>
         ))}
       </div>
-      {expandedImage && (
+      {expandedImage && createPortal((
         <div className="projectImageLightbox" role="dialog" aria-modal="true" aria-label={expandedImage.title} onClick={() => setExpandedImage(null)}>
           <div className="projectImageLightboxPanel" onClick={(event) => event.stopPropagation()}>
             <div className="projectVideoLightboxTop">
@@ -314,7 +320,7 @@ export default function ProjectPaperStack({ project }) {
             <img className="projectImageLightboxPicture" src={expandedImage.src} alt={expandedImage.title} />
           </div>
         </div>
-      )}
+      ), document.body)}
     </aside>
   );
 }

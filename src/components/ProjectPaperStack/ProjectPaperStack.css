@@ -496,14 +496,16 @@
 
 .projectVideoLightboxTop {
   display: flex;
-  min-height: 54px;
-  padding: 0 14px 0 18px;
+  min-height: 52px;
+  padding: 0 12px 0 16px;
   align-items: center;
   justify-content: space-between;
   color: #d8b4fe;
-  border-bottom: 1px dashed rgba(216, 180, 254, 0.34);
+  background: rgba(14, 7, 20, 0.82);
+  border: 1px solid rgba(216, 180, 254, 0.34);
   font-size: 13px;
   font-weight: 900;
+  backdrop-filter: blur(12px);
 }
 
 .projectVideoLightboxTop button {
@@ -521,33 +523,37 @@
 .projectImageLightbox {
   position: fixed;
   inset: 0;
-  z-index: 180;
+  z-index: 260;
   display: grid;
-  padding: clamp(20px, 4vw, 60px);
+  padding: clamp(12px, 2vw, 24px);
   place-items: center;
   background:
     radial-gradient(circle at 50% 42%, rgba(124, 58, 237, 0.18), transparent 34rem),
-    rgba(5, 2, 7, 0.9);
-  backdrop-filter: blur(8px);
+    rgba(5, 2, 7, 0.94);
+  backdrop-filter: blur(10px);
 }
 
 .projectImageLightboxPanel {
-  width: min(1500px, 94vw);
-  max-height: calc(100vh - 70px);
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
   color: #f8f5ff;
-  background: #12091a;
-  border: 1px solid rgba(216, 180, 254, 0.42);
-  box-shadow:
-    9px 9px 0 rgba(76, 29, 149, 0.58),
-    0 24px 80px rgba(0, 0, 0, 0.52);
+  background: transparent;
+  border: 0;
 }
 
 .projectImageLightboxPicture {
   display: block;
-  width: 100%;
-  max-height: calc(100vh - 140px);
+  width: min(100%, 1800px);
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
   object-fit: contain;
-  background: #050207;
+  background: rgba(5, 2, 7, 0.35);
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.55);
 }
 
 @media (max-width: 1100px) {
