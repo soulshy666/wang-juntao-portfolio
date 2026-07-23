@@ -136,6 +136,9 @@ export default function ProjectPaperStack({ project }) {
 
             const player = videoRefs.current.get(demoVideoKey);
             if (player) {
+              player.muted = false;
+              player.volume = 1;
+              player.controls = true;
               player.load();
               player.play().catch(() => {});
             }
@@ -220,12 +223,16 @@ export default function ProjectPaperStack({ project }) {
                         else videoRefs.current.delete(demoVideoKey);
                       }}
                       className="projectPaperVideo"
-                      muted
+                      controls
                       loop
                       playsInline
                       autoPlay={isVideoLoaded}
                       preload="none"
                       poster={project.image}
+                      onLoadedMetadata={(event) => {
+                        event.currentTarget.muted = false;
+                        event.currentTarget.volume = 1;
+                      }}
                     >
                       <source src={demoVideo} type="video/mp4" />
                     </video>
