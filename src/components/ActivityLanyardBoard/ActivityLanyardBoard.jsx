@@ -79,8 +79,8 @@ export default function ActivityLanyardBoard({ items, resetKey = 0 }) {
 
       {!revealed ? (
         <div className="activityOfficialLanyard">
-          <LanyardCluster key={lanyardInstanceKey} cards={lanyardCards} onRelease={revealActivities} retracting={retracting} />
-          <div className="activityLanyardHint">拖动水牌，松手后打开活动页</div>
+          <LanyardCluster key={lanyardInstanceKey} cards={lanyardCards} retracting={retracting} />
+          <div className="activityLanyardHint">拖动水牌，松手后自由摆动</div>
         </div>
       ) : (
         <div className="activityRevealPage">

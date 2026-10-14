@@ -7,6 +7,33 @@ import "./ProjectPaperStack.css";
 function getProjectPapers(project) {
   const featuredAwards = project.featuredAwards || (project.featuredBadge ? [project.featuredBadge] : []);
 
+  if (project.pendingDetails || project.overviewText) {
+    const papers = project.demoVideo || project.pendingDemoVideo ? [{
+      id: "demo",
+      label: "游戏实机演示视频",
+      kicker: "GAMEPLAY VIDEO",
+      icon: Play,
+      text: project.demoVideo ? "查看项目的核心玩法与实机表现。" : "实机演示视频待补充。",
+    }] : [{
+      id: "overview",
+      label: "项目资料",
+      kicker: "PROJECT ARCHIVE",
+      icon: ScrollText,
+      text: project.overviewText || "项目介绍、实机演示与试玩链接待补充。",
+    }];
+    if (featuredAwards.length && !project.hideAwardPaper) {
+      papers.push({
+        id: "awards",
+        label: "获得奖项",
+        kicker: "AWARDS",
+        icon: Award,
+        text: project.featuredBadge,
+        awards: featuredAwards,
+      });
+    }
+    return papers;
+  }
+
   if (project.slug === "balatro-shader") {
     return [
       {
@@ -52,7 +79,7 @@ function getProjectPapers(project) {
   if (project.tag !== "RECREATION") {
     papers.push({
       id: "feedback",
-      label: "玩家体验与反馈",
+      label: project.feedbackLabel || "玩家体验与反馈",
       kicker: "PLAYER FEEDBACK",
       icon: MessageSquareText,
       text: project.feedbackText || "整理试玩中出现的关键问题、玩家感受和后续迭代方向。",

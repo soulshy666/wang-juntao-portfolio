@@ -452,12 +452,11 @@ const stats = [
   { value: "5+", label: "可展示游戏项目" },
   { value: "7天", label: "AI Native Demo 闭环" },
   { value: "Top 3", label: "高校创作大赛三等奖" },
-  { value: "5天/周", label: "可实习时间" },
 ];
 
 const awards = [
   { result: "三等奖", name: "莉莉丝高校游戏创作大赛" },
-  { result: "优胜奖", name: "网易 MiniGame 初赛" },
+  { result: "第一名", name: "网易 MiniGame 初赛" },
   { result: "第一名", name: "2026 CIGA 万物破元站" },
 ];
 
@@ -547,7 +546,7 @@ const projects = [
     slug: "endless-rush-hour",
     title: "无尽早高峰",
     meta: "像素 / 多角色 / 关卡节奏设计",
-    period: "待补充",
+    period: "2026",
     image: "/assets/project-peakrush.png",
     demoVideo: "/assets/projects/endless-rush-hour-demo.mp4",
     tag: "COMPETITION",
@@ -574,7 +573,7 @@ const projects = [
     slug: "balatro-shader",
     title: "小丑牌 Shader 复刻",
     meta: "Shader / VFX / 画面复刻",
-    period: "待补充",
+    period: "2026",
     image: "/assets/project-beast.png",
     demoVideo: "/assets/projects/balatro-shader-demo.mp4",
     breakdownLink: "https://tcnundy0sz1l.feishu.cn/wiki/OzalwxHXLicIkwkYnRLcxr8anCf",
@@ -587,7 +586,7 @@ const projects = [
     slug: "ue5-jett-3c",
     title: "UE5 复刻捷丰 3C",
     meta: "UE5 / 角色控制 / 技能系统",
-    period: "待补充",
+    period: "2026",
     image: "/assets/project-ue5-valorant-web.webp",
     demoVideo: "/assets/projects/ue5-jett-demo.mp4",
     breakdownLink: "https://tcnundy0sz1l.feishu.cn/wiki/DCc2wyfKUiWhWekqZ0GcXuIQnie",
@@ -624,6 +623,66 @@ const projects = [
     desc: "2026 CIGA 广州万物破元站第一名作品。围绕主题限制完成创意发散、核心玩法验证与短周期 Demo 交付，突出轻量机制与清晰互动反馈。",
     contributions: ["参与主题拆解与核心玩法方向确定", "推进短周期 Demo 的规则验证和交互节奏打磨", "整理现场试玩反馈并优化展示版本表达"],
     link: "https://www.taptap.cn/app/881272",
+  },
+  {
+    slug: "apple-falls-up",
+    title: "苹果怎么往上掉？",
+    meta: "策划 / 程序 / 竖屏休闲成长",
+    period: "2026",
+    image: "/assets/project-apple-falls-up.webp",
+    demoVideo: "/assets/projects/apple-falls-up-demo.mp4",
+    tag: "休闲成长",
+    featuredBadge: "制造新星 Game Jam 第 2 期高校专场入围",
+    desc: "驾驶外星飞船闯入牛顿的苹果园，长按释放反重力脉冲，在燃料耗尽前尽可能多地吸走苹果。收集惊叹值解锁技能，强化飞船并触发崩解连锁与星芒炮阵，逐步挑战更坚固的苹果。",
+    overviewText: "长按即可采集，落点选择、技能路线与升级顺序带来不同的成长体验。以简单操作、清晰成长和持续爽感为目标，目前仍在持续优化，欢迎反馈数值平衡、操作手感与技能效果。",
+    contributions: [
+      "策划与程序：负责核心玩法、成长系统与程序实现，将长按采集、燃料限制、技能解锁和连锁效果整合为可玩的成长循环",
+      "资源循环构思：以燃料作为单轮采集预算，以惊叹值推动技能解锁；让玩家在有限时间内选择落点与目标，再通过强化飞船提升下一轮采集能力",
+      "数值维度构思：伤害影响坚固苹果的突破效率，攻击频率影响脉冲输出节奏，引力范围影响覆盖面，燃料储备影响持续作业时间；升级选择围绕这些不同收益展开",
+      "成长节奏构思：围绕苹果坚固程度与飞船采集能力的关系，安排从基础采集到技能扩展的成长过程，让玩家感受到升级带来的效率变化，也保留挑战更坚固苹果的目标",
+      "技能联动构思：将采集飞船、崩解连锁与星芒炮阵作为不同的成长方向，结合落点、覆盖范围和触发时机，让升级顺序与技能路线带来不同的推进体验",
+    ],
+  },
+  {
+    slug: "chibi-valorant",
+    title: "Q版无畏契约",
+    meta: "JS 3D / 纯代码构建 / 独立开发",
+    period: "2026",
+    image: "/assets/project-chibi-valorant.webp",
+    demoVideo: "/assets/projects/chibi-valorant-demo.mp4",
+    tag: "3D 射击复刻",
+    featuredBadge: "B站 34.1万播放 / 1万点赞",
+    hideAwardPaper: true,
+    feedbackLabel: "B站视频数据",
+    feedbackImage: "/assets/projects/chibi-valorant-bilibili.png",
+    feedbackMetric: "34.1万播放 / 1万点赞",
+    feedbackText: "截至 2026 年 10 月 14 日，B站展示视频累计获得 34.1 万播放、1 万点赞，游客播放占比为 99.97%。数据来源为个人创作后台截图。",
+    desc: "使用 JS 3D 独立制作的 Q 版《无畏契约》射击复刻项目。场景、人物与特效均由代码构建，展示纯代码实现的三维游戏画面与射击体验；项目由我一人完成，无其他人员协作。",
+    contributions: [
+      "独立完成项目开发与整合，无其他人员协作",
+      "使用 JS 3D 以代码构建全部场景与人物",
+      "以代码实现视觉特效，整合三维画面与射击体验",
+      "制作并发布B站演示视频，累计获得 34.1 万播放与 1 万点赞",
+    ],
+  },
+  {
+    slug: "cat-shadow-stealth",
+    title: "三脚猫行动",
+    meta: "网易高校 MINI-GAME / 策划 / 程序",
+    period: "2026.08",
+    image: "/assets/project-cat-shadow-stealth.webp",
+    demoVideo: "/assets/projects/cat-shadow-stealth-demo.mp4",
+    tag: "2D 潜行搜打撤",
+    link: "https://www.taptap.cn/app/894113?os=pc",
+    featuredBadge: "网易游戏高校 MINI-GAME 决赛一等奖",
+    desc: "以“藏”为核心的 2D 潜行搜打撤肉鸽游戏。扮演一只猫，在黑暗房间搜查物资，躲避敌人视野与声音侦查，通过暗杀、藏匿尸体与道具运用，在多层关卡中积累成长并寻找撤离路线。",
+    overviewText: "目前仅支持 PC 游玩，移动端适配正在优化。跑得太快会暴露脚步，正面硬拼风险很高；利用环境、路线与道具组合是潜行的关键。现已包含教程、巡逻、暗杀、搜查与多关卡撤离，后续将继续优化敌人行为和关卡变化。",
+    contributions: [
+      "玩法设计：围绕“藏”构建潜行、躲藏、暗杀、搜查与撤离循环，强化非正面对抗的策略体验",
+      "系统设计：搭建敌人视野、声音警戒、尸体发现，以及藏尸、道具、背包、商店、三选一词条与多层关卡流程",
+      "关卡设计：设计教学关与 5 层正式关卡，规划敌人分布、房间刷新、搜查点、藏身点与撤离路线",
+      "调试工具：制作房间预览、敌人测试与物品网格预览编辑器，快速查看房间模板、敌人行为和道具在背包中的占点效果",
+    ],
   },
 ];
 
@@ -1557,7 +1616,6 @@ function PortfolioApp({
             <div className="aboutInfoRows">
               <div><span>求职方向</span><strong>游戏策划 / 游戏程序</strong></div>
               <div><span>专业背景</span><strong>软件工程</strong></div>
-              <div><span>实习时间</span><strong>每周 5 天 / 6 月底可到岗</strong></div>
               <div><span>联系邮箱</span><a href="mailto:3414884729@qq.com">3414884729@qq.com</a></div>
               <div><span>联系电话</span><a href="tel:18359795479">18359795479</a></div>
             </div>
@@ -1601,10 +1659,6 @@ function PortfolioApp({
           <BorderGlow className="profileGlow portraitGlow" {...glowProps}>
             <div className="portraitWrap">
               <img src="/assets/portrait.png" alt="王俊涛人物图" />
-              <div className="statusLine">
-                <span />
-                6月底可到岗 / 每周可实习5天
-              </div>
             </div>
           </BorderGlow>
 
