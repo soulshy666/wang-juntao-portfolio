@@ -463,6 +463,7 @@ const awards = [
 const projects = [
   {
     slug: "beast-incarnation",
+    documentLink: "https://pcnczf67l88l.feishu.cn/wiki/QGNdw9Apli4rjzk8iURc4yU8nMd",
     title: "万兽化身",
     meta: "Unity / 关卡策划 / 程序",
     period: "2026.03 - 2026.06",
@@ -626,6 +627,7 @@ const projects = [
   },
   {
     slug: "apple-falls-up",
+    link: "https://www.taptap.cn/app/902957",
     title: "苹果怎么往上掉？",
     meta: "策划 / 程序 / 竖屏休闲成长",
     period: "2026",
@@ -645,6 +647,8 @@ const projects = [
   },
   {
     slug: "chibi-valorant",
+    link: "https://www.bilibili.com/video/BV1Pheb65Esh/",
+    linkLabel: "B站演示视频",
     title: "Q版无畏契约",
     meta: "JS 3D / 纯代码构建 / 独立开发",
     period: "2026",

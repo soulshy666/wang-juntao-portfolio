@@ -93,7 +93,18 @@ export default function ProjectDetail({ project, onBack, animateText = true, vis
               target="_blank"
               rel="noreferrer"
             >
-              游戏游玩链接
+              {project.linkLabel || "游戏游玩链接"}
+              <ArrowUpRight size={18} />
+            </a>
+          )}
+          {project.documentLink && (
+            <a
+              className="projectDetailAction"
+              href={project.documentLink}
+              target="_blank"
+              rel="noreferrer"
+            >
+              策划文档
               <ArrowUpRight size={18} />
             </a>
           )}
