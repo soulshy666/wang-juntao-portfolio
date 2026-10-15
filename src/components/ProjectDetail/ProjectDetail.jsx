@@ -7,7 +7,7 @@ import "./ProjectDetail.css";
 
 export default function ProjectDetail({ project, onBack, animateText = true, visualSettings }) {
   const [entryReady, setEntryReady] = useState(false);
-  const hasExternalLink = project.link?.startsWith("http");
+  const hasExternalLink = project.link?.startsWith("http") || project.link?.startsWith("/games/");
   const isBalatro = project.slug === "balatro-shader";
   const splitSettings = visualSettings.splitText;
   const balatroSettings = visualSettings.balatro;
@@ -105,6 +105,17 @@ export default function ProjectDetail({ project, onBack, animateText = true, vis
               rel="noreferrer"
             >
               策划文档
+              <ArrowUpRight size={18} />
+            </a>
+          )}
+          {project.videoLink && (
+            <a
+              className="projectDetailAction"
+              href={project.videoLink}
+              target="_blank"
+              rel="noreferrer"
+            >
+              B站演示视频
               <ArrowUpRight size={18} />
             </a>
           )}
