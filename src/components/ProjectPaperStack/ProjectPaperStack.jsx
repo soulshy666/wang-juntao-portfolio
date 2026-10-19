@@ -21,6 +21,9 @@ function getProjectPapers(project) {
       icon: ScrollText,
       text: project.overviewText || "项目介绍、实机演示与试玩链接待补充。",
     }];
+    if (project.editorGallery?.length) {
+      papers.push({ id: "editors", label: "编辑器展示", kicker: "IN-GAME EDITORS", icon: ScrollText });
+    }
     if (featuredAwards.length && !project.hideAwardPaper) {
       papers.push({
         id: "awards",
@@ -202,7 +205,24 @@ export default function ProjectPaperStack({ project }) {
                 <span>{paper.kicker}</span>
                 <b>{String(index + 1).padStart(2, "0")}</b>
               </div>
-              {isPlayablePaper && isActive ? (
+              {paper.id === "editors" ? (
+                <div className="projectEditorShowcase">
+                  <h3>游戏内编辑器与调试工具</h3>
+                  <p>围绕高频迭代需求设计，借助 AI 实现。点击截图查看大图。</p>
+                  <div className="projectEditorGrid">
+                    {project.editorGallery.map((editor) => (
+                      <button type="button" key={editor.key} onClick={(event) => {
+                        event.stopPropagation();
+                        setExpandedImage({ src: editor.image, title: editor.title });
+                      }} onKeyDown={(event) => event.stopPropagation()}>
+                        <img src={editor.image} alt={editor.title} loading="lazy" />
+                        <strong><kbd>小键盘 {editor.key}</kbd> {editor.title}</strong>
+                        <span>{editor.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : isPlayablePaper && isActive ? (
                 <div className="projectPaperPlayable">
                   <UnityGameEmbed autoStart active compact />
                 </div>

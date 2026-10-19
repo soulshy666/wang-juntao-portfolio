@@ -3,6 +3,27 @@
   min-height: 700px;
 }
 
+.projectPaper:has(.projectEditorShowcase) {
+  height: 560px;
+  width: calc(100% - 32px);
+}
+
+.projectEditorShowcase {
+  width: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.projectEditorShowcase > h3 { font-size: 24px; margin: 12px 0; }
+.projectEditorShowcase > p { font-size: 13px; line-height: 1.6; }
+.projectEditorGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.projectEditorGrid button { padding: 0; background: transparent; border: 0; text-align: left; color: #281b38; cursor: zoom-in; }
+.projectEditorGrid button:focus-visible { outline: 2px solid #7540c8; outline-offset: 3px; }
+.projectEditorGrid img { width: 100%; height: 110px; object-fit: contain; background: #15131a; }
+.projectEditorGrid strong { display: block; font-size: 13px; line-height: 1.8; margin-top: 6px; }
+.projectEditorGrid kbd { font: inherit; color: #6531a5; }
+.projectEditorGrid span { display: block; font-size: 12px; line-height: 1.6; }
+
 .projectPaperArchive.isBalatroArchive {
   width: min(1040px, 100%);
   min-height: 0;
