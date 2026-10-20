@@ -320,6 +320,12 @@ export default function ProjectPaperStack({ project }) {
                   ) : (
                     <p>{paper.text}</p>
                   )}
+                  {paper.id === "awards" && project.awardImage && (
+                    <a className="projectAwardCertificate" href={project.awardImage} target="_blank" rel="noreferrer" onClick={event => event.stopPropagation()}>
+                      <img src={project.awardImage} alt={`${project.title}获奖证书`} loading="lazy" />
+                      <span>查看完整获奖证书 ↗</span>
+                    </a>
+                  )}
                   {paperExternalLink && (
                     <a
                       className="projectPaperExternalLink"

@@ -20,7 +20,7 @@ import {
   UserRound,
   Wand2,
 } from "lucide-react";
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import ASCIIText from "./components/ASCIIText";
 import FaultyTerminal from "./components/FaultyTerminal";
 import GooeyNav from "./components/GooeyNav/GooeyNav";
@@ -32,7 +32,7 @@ import ProjectRouteTransition from "./components/ProjectRouteTransition/ProjectR
 import FavoriteTimeline from "./components/FavoriteTimeline/FavoriteTimeline";
 import VisualEditor from "./components/VisualEditor";
 
-const ActivityLanyardBoard = lazy(() => import("./components/ActivityLanyardBoard/ActivityLanyardBoard"));
+import AwardsShowcase from "./components/AwardsShowcase/AwardsShowcase";
 
 const EDITOR_PASSWORD = "838485";
 const VISUAL_SETTINGS_KEY = "wjt-portfolio-visual-settings-v1";
@@ -686,6 +686,7 @@ const projects = [
     tag: "2D 潜行搜打撤",
     link: "https://www.taptap.cn/app/894113?os=pc",
     featuredBadge: "网易游戏高校 MINI-GAME 决赛一等奖",
+    awardImage: "/assets/projects/cat-shadow-stealth-award-certificate.jpg",
     desc: "以“藏”为核心的 2D 潜行搜打撤肉鸽游戏。扮演一只猫，在黑暗房间搜查物资，躲避敌人视野与声音侦查，通过暗杀、藏匿尸体与道具运用，在多层关卡中积累成长并寻找撤离路线。",
     overviewText: "目前仅支持 PC 游玩，移动端适配正在优化。跑得太快会暴露脚步，正面硬拼风险很高；利用环境、路线与道具组合是潜行的关键。现已包含教程、巡逻、暗杀、搜查与多关卡撤离，后续将继续优化敌人行为和关卡变化。",
     contributions: [
@@ -723,21 +724,21 @@ const projects = [
   },
 ];
 
-const FIRST_PROJECT_PAGE = 2;
+const ACTIVITIES_PAGE = 2;
+const FIRST_PROJECT_PAGE = ACTIVITIES_PAGE + 1;
 const LAST_PROJECT_PAGE = FIRST_PROJECT_PAGE + projects.length - 1;
 const FAVORITE_PAGE_COUNT = 6;
 const STRENGTHS_PAGE = LAST_PROJECT_PAGE + 1;
 const LAST_FAVORITE_PAGE = STRENGTHS_PAGE + FAVORITE_PAGE_COUNT - 1;
-const ACTIVITIES_PAGE = LAST_FAVORITE_PAGE + 1;
-const CONTACT_PAGE = ACTIVITIES_PAGE + 1;
+const CONTACT_PAGE = LAST_FAVORITE_PAGE + 1;
 const PROFILE_PAGE = CONTACT_PAGE;
 const PAGE_COUNT = PROFILE_PAGE + 1;
 
 function getNavIndexForPage(page) {
   if (page >= CONTACT_PAGE) return 4;
-  if (page === ACTIVITIES_PAGE) return 3;
-  if (page >= STRENGTHS_PAGE && page <= LAST_FAVORITE_PAGE) return 2;
-  if (page >= FIRST_PROJECT_PAGE && page <= LAST_PROJECT_PAGE) return 1;
+  if (page === ACTIVITIES_PAGE) return 1;
+  if (page >= STRENGTHS_PAGE && page <= LAST_FAVORITE_PAGE) return 3;
+  if (page >= FIRST_PROJECT_PAGE && page <= LAST_PROJECT_PAGE) return 2;
   return 0;
 }
 
@@ -1098,9 +1099,9 @@ function PortfolioApp({
   const gooeyDemoItems = useMemo(
     () => [
       { label: "主页", href: "#top" },
+      { label: "荣誉", href: "#activities" },
       { label: "项目", href: "#projects" },
       { label: "最爱", href: "#strengths" },
-      { label: "活动", href: "#activities" },
       { label: "关于我", href: "#profile" },
     ],
     [],
@@ -1293,6 +1294,21 @@ function PortfolioApp({
 
     const onWheel = (event) => {
       if (editorOpen) return;
+      if (event.defaultPrevented) return;
+      const awardsSection = activitiesRef.current;
+      const awardsScroller = awardsSection?.querySelector(".scroll-stack");
+      const awardsAtTop = Math.abs(window.scrollY - (awardsSection?.offsetTop ?? -10000)) < 5;
+      if (awardsAtTop && awardsScroller && (
+        (event.deltaY > 0 && awardsScroller.scrollTop < awardsScroller.scrollHeight - awardsScroller.clientHeight - 2) ||
+        (event.deltaY < 0 && awardsScroller.scrollTop > 2)
+      )) {
+        // Keep the site's page-by-page wheel navigation from skipping the award stack.
+        if (!awardsScroller.contains(event.target)) {
+          event.preventDefault();
+          awardsScroller.scrollBy({ top: event.deltaY, behavior: "instant" });
+        }
+        return;
+      }
 
       const wantsForward = event.deltaY > 0;
       const wantsBackward = event.deltaY < 0;
@@ -1382,12 +1398,7 @@ function PortfolioApp({
 
   const selectProject = (index) => {
     if (index < 0) {
-      activePageRef.current = 1;
-      setActiveNavIndex(0);
-      transitionProgressRef.current = 1;
-      setTransitionProgress(1);
-      setTransitionPhase("enter-tv");
-      animateToScrollPosition(0);
+      window.__portfolioNavigateToPage?.(ACTIVITIES_PAGE);
       return;
     }
 
@@ -1401,7 +1412,7 @@ function PortfolioApp({
 
     setActiveProjectIndex(index);
     activePageRef.current = index + FIRST_PROJECT_PAGE;
-    setActiveNavIndex(1);
+    setActiveNavIndex(getNavIndexForPage(activePageRef.current));
     animateToScrollPosition((projectsRef.current?.offsetTop ?? 0) + index * window.innerHeight);
   };
 
@@ -1553,6 +1564,10 @@ function PortfolioApp({
           </aside>
         </div>
       </section>
+      <section ref={activitiesRef} className="activitySection pageSection" id="activities">
+        <AwardsShowcase projects={projects} onOpenProject={openProjectDetails} resetKey={activityEntryKey} />
+      </section>
+
       <section
         ref={projectsRef}
         className="projectFanSection pageSection"
@@ -1595,12 +1610,6 @@ function PortfolioApp({
         onSelect={selectFavorite}
         onOpenDetails={onOpenFavorite}
       />
-
-      <section ref={activitiesRef} className="activitySection pageSection" id="activities">
-        <Suspense fallback={<div className="activityLoading">Loading lanyard...</div>}>
-          <ActivityLanyardBoard items={activityExperiences} resetKey={activityEntryKey} />
-        </Suspense>
-      </section>
 
       {false && (
       <section className="section favorites pageSection">
