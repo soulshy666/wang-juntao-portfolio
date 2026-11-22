@@ -1652,7 +1652,7 @@ function PortfolioApp({
             <p className="aboutEyebrow"><span />ABOUT ME</p>
             <h2>关于我</h2>
             <p>
-              你好，我是王俊涛，也可以叫我羊哞哞。我是一名游戏策划与游戏程序开发者，目前就读于广东技术师范大学软件工程专业。
+              你好，我是王俊涛，也可以叫我羊哞哞。我是一名游戏策划与游戏程序开发者。
               我喜欢从玩法推演出发，用 Unity、UE5 和 AI 工具快速完成原型、验证手感，并把想法真正做成可以玩的 Demo。
             </p>
           </article>
@@ -1713,7 +1713,7 @@ function PortfolioApp({
               <p className="sectionKicker">Profile</p>
               <h2>游戏策划与程序开发双栈，偏向 AI Native 快速创作。</h2>
               <p>
-                我目前就读于广东技术师范大学软件工程专业，方向是玩法策划、关卡验证、Unity / UE 原型开发和 AI 辅助内容生产。
+                我的方向是玩法策划、关卡验证、Unity / UE 原型开发和 AI 辅助内容生产。
                 在多个 GameJam 与高校赛事中，我负责从创意推演、系统拆解、程序实现到 Demo 交付的完整链路。
               </p>
               <div className="infoGrid">
@@ -1728,10 +1728,6 @@ function PortfolioApp({
                 <span>
                   <MessageCircle size={18} />
                   QQ 3414884729
-                </span>
-                <span>
-                  <MapPin size={18} />
-                  广东技术师范大学
                 </span>
               </div>
             </div>
